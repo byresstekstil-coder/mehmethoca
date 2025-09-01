@@ -1,0 +1,70 @@
+
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Online Ders • Mehmet Ertürk</title>
+  <meta name="theme-color" content="#1e2b48">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/styles.css">
+  <meta name="description" content="Online matematik ders paketleri ve başvuru.">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <img src="/icons/icon-192.png" width="36" height="36" alt="EduBoss">
+        <div>
+          <div class="title">Online Ders</div>
+          <div class="tag">Mehmet Ertürk • Matematik</div>
+        </div>
+      </div>
+      <div class="nav">
+        <a class="btn" href="/index.html">Uygulamaya Dön</a>
+      </div>
+    </header>
+
+    <section>
+      <div class="grid" id="publicPlans"></div>
+      <div class="card">
+        <h3>İletişim</h3>
+        <p>WhatsApp ve Instagram ile hızlıca ulaşabilirsiniz.</p>
+        <div class="row">
+          <a id="waLink" class="btn primary" target="_blank" rel="noopener">WhatsApp ile Yaz</a>
+          <a id="igLink" class="btn" target="_blank" rel="noopener">Instagram</a>
+        </div>
+      </div>
+      <div class="alert">Not: Bu sayfadaki paketler uygulamadaki "Online Ders" bölümünde düzenlenebilir.</div>
+    </section>
+
+    <footer>© <span id="year"></span> Mehmet Ertürk • Online Matematik</footer>
+  </div>
+
+  <script>
+    const $ = s=>document.querySelector(s);
+    const $$ = s=>Array.from(document.querySelectorAll(s));
+    const data = JSON.parse(localStorage.getItem('eduboss_data')||'{}');
+    const plans = (data.online && data.online.plans) || [];
+    const phone = (data.online && data.online.contact && data.online.contact.phone) || '';
+    const ig = (data.online && data.online.contact && data.online.contact.instagram) || '';
+
+    function planCard(p){
+      return `<div class="card">
+        <h3>${p.name||'Paket'}</h3>
+        <div class="small">${p.desc||''}</div>
+        <hr>
+        <div class="kv"><span class="k">Aylık Fiyat:</span> <span class="v">${p.price?('₺'+p.price):'—'}</span></div>
+      </div>`;
+    }
+    $("#publicPlans").innerHTML = plans.length ? plans.map(planCard).join("") : '<div class="card small">Henüz plan eklenmemiş.</div>';
+    $("#year").textContent = new Date().getFullYear();
+    const cleanPhone = phone.replace(/\D/g,'');
+    $("#waLink").href = cleanPhone ? `https://wa.me/${cleanPhone}` : '#';
+    $("#waLink").textContent = cleanPhone ? "WhatsApp ile Yaz" : "WhatsApp (Telefon ekleyin)";
+    $("#igLink").href = ig ? `https://instagram.com/${ig}` : '#';
+    $("#igLink").textContent = ig ? `@${ig}` : "Instagram (Kullanıcı ekleyin)";
+  </script>
+</body>
+</html>
