@@ -194,18 +194,31 @@ $("#stkCSV").addEventListener('click',()=>downloadCSV('stok',['name','sku','cat'
 function fillOrderSku(){ $("#ordSku").innerHTML=data.stok.map(s=>`<option value="${s.sku}" data-price="${s.price||0}">${s.sku} • ${s.name}</option>`).join(""); }
 $("#ordSku").addEventListener('change',()=>{ const opt=$("#ordSku").selectedOptions[0]; if(opt) $("#ordPrice").value=opt.getAttribute('data-price')||''; });
 $("#addOrd").addEventListener('click',()=>{
-  if(!data.stok.length) return alert("Önce stok ekleyin."); const sku=$("#ordSku").value; const item=data.stok.find(s=>s.sku===sku); if(!item) return alert("SKU bulunamadı.");
-  const qty=parseInt($("#ordQty").value||'1',10); const unit=parseFloat($("#ordPrice").value||item.price||0);
-  const o={id:crypto.randomUUID(), date: $("#ordDate").value? new Date($("#ordDate").value).toISOString(): new Date().toISOString(), customer: $("#ordCust").value.trim(), phone: $("#ordPhone").value.trim(), sku, qty, unit, method:$("#ordMethod").value, note:$("#ordNote").value.trim()};
-  data.siparis.push(o); item.qty=(item.qty||0)-qty; data.kasa.push({id:crypto.randomUUID(), type:'Gelir', cat:'Dükkan Satış', dt:o.date, amount: qty*unit, method:o.method==='Kart'?'Kredi Kartı':(o.method==='EFT'?'EFT/Havale':'Nakit'), who:o.customer, note:`${sku} x${qty}`}); save();
+  if(!data.stok.length) return alert("Önce stok ekleyin.");
+  if(cartItems.length===0){
+    const sku=$("#ordSku").value; const item=data.stok.find(s=>s.sku===sku); if(!item) return alert("SKU bulunamadı.");
+    const qty=parseInt($("#ordQty").value||'1',10); const unit=parseFloat($("#ordPrice").value||item.price||0);
+    cartItems=[{sku,qty,unit}];
+  }
+  const date = $("#ordDate").value? new Date($("#ordDate").value).toISOString(): new Date().toISOString();
+  const o={id:crypto.randomUUID(), date, customer: $("#ordCust").value.trim(), phone: $("#ordPhone").value.trim(), items: cartItems.map(x=>({...x})), method:$("#ordMethod").value, note:$("#ordNote").value.trim()};
+  let total=0; o.items.forEach(it=>{ const item=data.stok.find(s=>s.sku===it.sku); if(item){ item.qty=(item.qty||0)-it.qty; total += ((+it.qty||0)*(+it.unit||0)); } });
+  data.siparis.push(o);
+  data.kasa.push({id:crypto.randomUUID(), type:'Gelir', cat:'Dükkan Satış', dt:o.date, amount: total, method:o.method==='Kart'?'Kredi Kartı':(o.method==='EFT'?'EFT/Havale':'Nakit'), who:o.customer, note:`${o.items.length} kalem`});
+  save();
+  renderOrders(); renderStok(); renderKasa(); renderDashboard(); drawKasaChart();
+  cartItems=[]; renderCart();
+  ["ordCust","ordPhone","ordQty","ordPrice","ordNote"].forEach(id=>{$("#"+id).value='';}); $("#ordQty").value='1';
+}); save();
   renderOrders(); renderStok(); renderKasa(); renderDashboard(); drawKasaChart();
   $("#ordCust").value=''; $("#ordPhone").value=''; $("#ordQty").value='1'; $("#ordPrice").value=''; $("#ordNote").value='';
 });
 function renderOrders(){ const q=($("#ordSearch").value||'').toLowerCase();
-  const rows=data.siparis.filter(o=>[o.customer,o.phone,o.sku,o.method,o.note].join(' ').toLowerCase().includes(q)).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(o=>{
-    const item=data.stok.find(s=>s.sku===o.sku); const tutar=(o.qty*o.unit)||0;
-    return `<tr ${new Date(it.dateISO)<new Date()&&!it.paid?'style=\"background:#402\"':''}><td>${new Date(o.date).toLocaleString()}</td><td>${o.customer}</td><td>${item?item.name:o.sku}</td><td>${o.qty}</td><td>₺${tutar.toFixed(2)}</td><td>${o.method}</td><td>${o.note||''}</td>
-    <td class="actions"><button class="btn" data-wa="${o.phone||''}">WA</button><button class="btn" data-rec="${o.id}">Fiş</button><button class="btn danger" data-odel="${o.id}">Sil</button></td></tr>`;
+  const rows=data.siparis.filter(o=>[o.customer,o.phone,(o.items||[]).map(x=>x.sku).join(' '),o.method,o.note].join(' ').toLowerCase().includes(q)).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(o=>{
+    const lines=(o.items||[]).map(it=>{ const s=data.stok.find(x=>x.sku===it.sku); return `${s?(s.name+' ('+it.sku+')'):it.sku} x${it.qty} • ₺${(+it.unit||0).toFixed(2)}`; }).join('<br>');
+    const total=(o.items||[]).reduce((sum,it)=>sum+((+it.qty||0)*(+it.unit||0)),0);
+    return `<tr><td>${new Date(o.date).toLocaleString()}</td><td>${o.customer}</td><td>${lines}</td><td>₺${total.toFixed(2)}</td><td>${o.method}</td><td>${o.note||''}</td>
+    <td class="actions"><button class="btn" data-wa="${o.phone||''}">WA</button><button class="btn" data-inv="${o.id}">Fatura</button><button class="btn" data-rec="${o.id}">Fiş</button><button class="btn danger" data-odel="${o.id}">Sil</button></td></tr>`;
   }).join("");
   $("#ordTable tbody").innerHTML=rows || '<tr><td colspan="8" class="small">Kayıt yok.</td></tr>';
   $$("#ordTable [data-odel]").forEach(b=>b.onclick=()=>{ data.siparis=data.siparis.filter(x=>x.id!==b.dataset.odel); save(); renderOrders(); });
@@ -239,8 +252,10 @@ function renderSettings(){
   $("#ownerInvSerial").value=(data.settings.invoiceSerial!=null?data.settings.invoiceSerial:1);
   if($("#ownerLogoSize")) $("#ownerLogoSize").value=(data.settings.logoSize!=null?data.settings.logoSize:70);
   if($("#ownerLogoPos")) $("#ownerLogoPos").value=(data.settings.logoPos||'Sol');
+  if($("#invTheme")) $("#invTheme").value=(data.settings.invTheme||'#1e2b48');
+  if($("#invFont")) $("#invFont").value=(data.settings.invFont||'Arial,Helvetica,sans-serif');
 }
-["ownerName","ownerTitle","ownerNote","ownerVAT","ownerInvPrefix","ownerInvSerial","ownerLogoSize","ownerLogoPos"].forEach(id=>{ const el=$("#"+id); if(!el) return; el.addEventListener('input',()=>{ data.settings.ownerName=$("#ownerName").value; data.settings.ownerTitle=$("#ownerTitle").value; data.settings.ownerNote=$("#ownerNote").value; data.settings.vatRate=parseFloat($("#ownerVAT").value||"18"); data.settings.invoicePrefix=$("#ownerInvPrefix").value||""; data.settings.invoiceSerial=parseInt($("#ownerInvSerial").value||"1",10); data.settings.logoSize=parseFloat($("#ownerLogoSize")?$("#ownerLogoSize").value:"70"); data.settings.logoPos=$("#ownerLogoPos")?$("#ownerLogoPos").value:"Sol"; save(); refreshOwner(); }); });
+["ownerName","ownerTitle","ownerNote","ownerVAT","ownerInvPrefix","ownerInvSerial","ownerLogoSize","ownerLogoPos","invTheme","invFont"].forEach(id=>{ const el=$("#"+id); if(!el) return; el.addEventListener('input',()=>{ data.settings.ownerName=$("#ownerName").value; data.settings.ownerTitle=$("#ownerTitle").value; data.settings.ownerNote=$("#ownerNote").value; data.settings.vatRate=parseFloat($("#ownerVAT").value||"18"); data.settings.invoicePrefix=$("#ownerInvPrefix").value||""; data.settings.invoiceSerial=parseInt($("#ownerInvSerial").value||"1",10); data.settings.logoSize=parseFloat($("#ownerLogoSize")?$("#ownerLogoSize").value:"70"); data.settings.logoPos=$("#ownerLogoPos")?$("#ownerLogoPos").value:"Sol"; data.settings.invTheme=$("#invTheme")?$("#invTheme").value:"#1e2b48"; data.settings.invFont=$("#invFont")?$("#invFont").value:"Arial,Helvetica,sans-serif"; save(); refreshOwner(); }); });
 $("#ownerLogo").addEventListener("change", e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ data.settings.logoDataUrl=fr.result; save(); alert("Logo kaydedildi."); }; fr.readAsDataURL(f); });
 $("#backupExport").addEventListener('click',()=>downloadJSON('eduboss-backup',data));
 $("#backupImportBtn").addEventListener('click',()=>$("#backupImport").click());
@@ -267,15 +282,19 @@ function printReceipt(kind, id){
       <div>Açıklama: ${k.note||'-'}</div>
       <hr><div style="font-size:12px;color:#666">Oluşturma: ${now.toLocaleString()}</div>`;
   }else if(kind==='order'){
-    const o=data.siparis.find(x=>x.id===id); if(!o) return; const item=data.stok.find(s=>s.sku===o.sku);
+    const o=data.siparis.find(x=>x.id===id); if(!o) return; 
+    const rows=(o.items||[]).map(it=>{ const s=data.stok.find(x=>x.sku===it.sku); const line=(+it.qty||0)*(+it.unit||0); return `<tr><td>${s?(s.name+' ('+it.sku+')'):it.sku}</td><td style='text-align:right'>${it.qty}</td><td style='text-align:right'>₺${(+it.unit||0).toFixed(2)}</td><td style='text-align:right'>₺${line.toFixed(2)}</td></tr>`; }).join('');
+    const total=(o.items||[]).reduce((sum,it)=>sum+((+it.qty||0)*(+it.unit||0)),0);
     filename = 'satis-fis';
     html = `<h2>${name}</h2><div>${title}</div><hr>
       <h3>Satış Fişi</h3>
       <div>Tarih: ${new Date(o.date).toLocaleString()}</div>
       <div>Müşteri: ${o.customer||'-'} (${o.phone||'-'})</div>
-      <div>Ürün: ${item?item.name:o.sku} (${o.sku})</div>
-      <div>Adet: ${o.qty} • Birim: ₺${(+o.unit||0).toFixed(2)}</div>
-      <div>Toplam: <b>₺${(o.qty*o.unit).toFixed(2)}</b></div>
+      <table style="width:100%;border-collapse:collapse;margin-top:8px">
+        <thead><tr><th style="text-align:left;border-bottom:1px solid #ccc;padding:6px">Ürün</th><th style="text-align:right;border-bottom:1px solid #ccc;padding:6px">Adet</th><th style="text-align:right;border-bottom:1px solid #ccc;padding:6px">Birim</th><th style="text-align:right;border-bottom:1px solid #ccc;padding:6px">Tutar</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="margin-top:8px"><b>TOPLAM: ₺${total.toFixed(2)}</b></div>
       <div>Yöntem: ${o.method}</div>
       <div>Not: ${o.note||'-'}</div>
       <hr><div style="font-size:12px;color:#666">Oluşturma: ${now.toLocaleString()}</div>`;
@@ -307,30 +326,35 @@ if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.s
 function printInvoice(kind,id){
   const name=(data.settings&&data.settings.ownerName)||'Mehmet Ertürk';
   const title=(data.settings&&data.settings.ownerTitle)||'Matematik Öğretmeni & Öğrenci Koçu';
-  let vat=(data.settings&&data.settings.vatRate!=null)? Number(data.settings.vatRate):18;
   const prefix=(data.settings&&data.settings.invoicePrefix)||'';
   const serial=(data.settings&&data.settings.invoiceSerial!=null)? data.settings.invoiceSerial:1;
   const logo=(data.settings&&data.settings.logoDataUrl)||'';
-  const now=new Date();
   if(kind==='order'){
-    const o=data.siparis.find(x=>x.id===id); if(!o) return; const item=data.stok.find(s=>s.sku===o.sku);
-    const total=(o.qty*o.unit)||0; const prod=(data.stok.find(s=>s.sku===o.sku)||{}); vat = (prod.vat!=null && !Number.isNaN(prod.vat))? Number(prod.vat):vat; const kdv=total*(vat/100); const net=total-kdv;
+    const o=data.siparis.find(x=>x.id===id); if(!o) return;
     const invNo = `${prefix}${String(serial).padStart(6,'0')}`;
-    const sz=(data.settings&&data.settings.logoSize!=null)? Number(data.settings.logoSize):70; const pos=(data.settings&&data.settings.logoPos)||'Sol'; const just = pos==='Orta'?'center':(pos==='Sağ'?'flex-end':'flex-start'); const logoHtml = logo? `<div style="display:flex;justify-content:${just};align-items:center;width:40%"><img src="${logo}" style="max-height:${sz}px;object-fit:contain"></div>` : '';
+    const theme=(data.settings&&data.settings.invTheme)||'#1e2b48'; const font=(data.settings&&data.settings.invFont)||'Arial,Helvetica,sans-serif';
+    const logoHtml = logo? (()=>{ const sz=(data.settings&&data.settings.logoSize!=null)? Number(data.settings.logoSize):70; const pos=(data.settings&&data.settings.logoPos)||'Sol'; const just = pos==='Orta'?'center':(pos==='Sağ'?'flex-end':'flex-start'); return `<div style="display:flex;justify-content:${just};align-items:center;width:40%"><img src="${logo}" style="max-height:${sz}px;object-fit:contain"></div>`; })() : '';
+    let total=0, totalKDV=0;
+    const rows=(o.items||[]).map(it=>{ const s=data.stok.find(x=>x.sku===it.sku)||{}; const vat=(s.vat!=null&&!Number.isNaN(s.vat))?Number(s.vat):((data.settings&&data.settings.vatRate!=null)?Number(data.settings.vatRate):18); const line=(+it.qty||0)*(+it.unit||0); const kdv=line*(vat/100); total+=line; totalKDV+=kdv; const name=s.name?`${s.name} (${it.sku})`:it.sku; return `<tr><td style='padding:6px'>${name}</td><td style='text-align:right;padding:6px'>${it.qty}</td><td style='text-align:right;padding:6px'>₺${(+it.unit||0).toFixed(2)}</td><td style='text-align:right;padding:6px'>${vat}%</td><td style='text-align:right;padding:6px'>₺${line.toFixed(2)}</td></tr>`; }).join('');
+    const net=total-totalKDV;
     const html = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">${logoHtml}<div style="flex:1"><h2 style="margin:0">${name}</h2><div>${title}</div></div></div><hr>
-      <h3>FATURA</h3>
+      <h3 style="color:${theme}">FATURA</h3>
       <div>Fatura No: <b>${invNo}</b></div>
       <div>Tarih: ${new Date(o.date).toLocaleDateString()}</div>
       <div>Müşteri: ${o.customer||'-'} (${o.phone||'-'})</div>
       <table style="width:100%;border-collapse:collapse;margin-top:8px">
-        <thead><tr><th style="text-align:left;border-bottom:1px solid #ccc;padding:6px">Ürün</th><th style="text-align:right;border-bottom:1px solid #ccc;padding:6px">Adet</th><th style="text-align:right;border-bottom:1px solid #ccc;padding:6px">Birim</th><th style="text-align:right;border-bottom:1px solid #ccc;padding:6px">Tutar</th></tr></thead>
-        <tbody><tr><td style="padding:6px">${item?item.name:o.sku} (${o.sku})</td><td style="text-align:right;padding:6px">${o.qty}</td><td style="text-align:right;padding:6px">₺${(+o.unit||0).toFixed(2)}</td><td style="text-align:right;padding:6px">₺${total.toFixed(2)}</td></tr></tbody>
+        <thead><tr><th style="text-align:left;border-bottom:2px solid ${theme};padding:6px">Ürün</th><th style="text-align:right;border-bottom:2px solid ${theme};padding:6px">Adet</th><th style="text-align:right;border-bottom:2px solid ${theme};padding:6px">Birim</th><th style="text-align:right;border-bottom:2px solid ${theme};padding:6px">KDV</th><th style="text-align:right;border-bottom:2px solid ${theme};padding:6px">Tutar</th></tr></thead>
+        <tbody>${rows}</tbody>
       </table>
       <div style="margin-top:8px">Ara Toplam: ₺${net.toFixed(2)}</div>
-      <div>KDV (%${vat}): ₺${kdv.toFixed(2)}</div>
+      <div>Toplam KDV: ₺${totalKDV.toFixed(2)}</div>
       <div><b>GENEL TOPLAM: ₺${total.toFixed(2)}</b></div>
-      <hr><div style="font-size:12px;color:#666">Oluşturma: ${now.toLocaleString()}</div>`;
-    const w=window.open('','_blank'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Fatura</title><style>body{font-family:Arial;padding:24px;} h2{margin:0} hr{border:0;border-top:1px solid #ccc;margin:12px 0}</style></head><body>${html}<script>window.onload=()=>window.print();</script></body></html>`); w.document.close();
+      <hr><div style="font-size:12px;color:#666">Oluşturma: ${new Date().toLocaleString()}</div>`;
+    const w=window.open('','_blank'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Fatura</title><style>body{font-family:${font};padding:24px;} h2{margin:0} hr{border:0;border-top:1px solid #ccc;margin:12px 0}</style></head><body>${html}<script>window.onload=()=>window.print();</script></body></html>`); w.document.close();
+    data.settings.invoiceSerial = (Number(serial)||0) + 1; save(); if($("#ownerInvSerial")) $("#ownerInvSerial").value=data.settings.invoiceSerial;
+  }
+}
+  const w=window.open('','_blank'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Fatura</title><style>body{font-family:Arial;padding:24px;} h2{margin:0} hr{border:0;border-top:1px solid #ccc;margin:12px 0}</style></head><body>${html}<script>window.onload=()=>window.print();</script></body></html>`); w.document.close();
     data.settings.invoiceSerial = (Number(serial)||0) + 1; save(); if($("#ownerInvSerial")) $("#ownerInvSerial").value=data.settings.invoiceSerial;
   }
 }
@@ -341,3 +365,50 @@ const stkImportInput=document.createElement('input'); stkImportInput.type='file'
 const stkImportBtn=document.createElement('button'); stkImportBtn.className='btn'; stkImportBtn.textContent='CSV İçe Aktar'; document.querySelector("#tab-dukkan .card").appendChild(stkImportBtn);
 stkImportBtn.addEventListener('click',()=>stkImportInput.click());
 stkImportInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ const lines=fr.result.split(/\\r?\\n/).filter(l=>l.trim()); const cols=lines.shift().split(','); lines.forEach(l=>{ const parts=l.split(','); const o={}; cols.forEach((c,i)=>o[c.trim()]=parts[i]); if(o.name&&o.sku){ data.stok.push({id:crypto.randomUUID(), name:o.name, sku:o.sku, cat:o.cat, attr:o.attr, qty:parseInt(o.qty||'0',10), min:parseInt(o.min||'0',10), cost:parseFloat(o.cost||'0'), price:parseFloat(o.price||'0')}); }}); save(); renderStok(); fillOrderSku(); renderDashboard(); }; fr.readAsText(f); });
+
+// ONLINE: announcements & homework
+function renderOnlineLists(){
+  const anns = (data.online.announcements)||[];
+  const hws = (data.online.homeworks)||[];
+  if(document.getElementById('annList'))
+    document.getElementById('annList').innerHTML = anns.length? ('<ul>'+anns.map((x,i)=>`<li><b>${x.title||''}</b> ${x.date?('• '+x.date):''} <button class='btn' data-ae='${i}'>Düzenle</button> <button class='btn danger' data-ad='${i}'>Sil</button><div class='small'>${x.text||''}</div></li>`).join('')+'</ul>') : 'Kayıt yok.';
+  if(document.getElementById('hwList'))
+    document.getElementById('hwList').innerHTML = hws.length? ('<ul>'+hws.map((x,i)=>`<li><b>${x.title||''}</b> ${x.date?('• '+x.date):''} <button class='btn' data-he='${i}'>Düzenle</button> <button class='btn danger' data-hd='${i}'>Sil</button><div class='small'>${x.text||''}</div></li>`).join('')+'</ul>') : 'Kayıt yok.';
+  $$('#annList [data-ad]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.ad; data.online.announcements.splice(i,1); save(); renderOnlineLists(); });
+  $$('#annList [data-ae]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.ae; const x=data.online.announcements[i]; x.title=prompt('Başlık',x.title)||x.title; x.date=prompt('Tarih (YYYY-MM-DD)',x.date||'')||x.date; x.text=prompt('Metin',x.text||'')||x.text; save(); renderOnlineLists(); });
+  $$('#hwList [data-hd]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.hd; data.online.homeworks.splice(i,1); save(); renderOnlineLists(); });
+  $$('#hwList [data-he]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.he; const x=data.online.homeworks[i]; x.title=prompt('Başlık',x.title)||x.title; x.date=prompt('Tarih',x.date||'')||x.date; x.text=prompt('Metin',x.text||'')||x.text; save(); renderOnlineLists(); });
+}
+$("#addAnn")?.addEventListener('click',()=>{ const o={title:$("#annTitle").value.trim(), date:$("#annDate").value, text:$("#annText").value.trim()}; if(!o.title) return alert('Başlık gerekli'); data.online.announcements.push(o); ['annTitle','annDate','annText'].forEach(id=>$("#"+id).value=''); save(); renderOnlineLists(); });
+$("#addHW")?.addEventListener('click',()=>{ const o={title:$("#hwTitle").value.trim(), date:$("#hwDue").value, text:$("#hwText").value.trim()}; if(!o.title) return alert('Başlık gerekli'); data.online.homeworks.push(o); ['hwTitle','hwDue','hwText'].forEach(id=>$("#"+id).value=''); save(); renderOnlineLists(); });
+
+// ORDER: multi-item cart
+let cartItems=[];
+function renderCart(){
+  const wrap=document.getElementById('orderItems');
+  if(!wrap) return;
+  wrap.innerHTML = cartItems.length? ('<ul>'+cartItems.map((it,i)=>`<li>${it.sku} x${it.qty} • ₺${(+it.unit||0).toFixed(2)} <button class='btn danger' data-rm='${i}'>Sil</button></li>`).join('')+'</ul>') : 'Henüz eklenmedi.';
+  $$('#orderItems [data-rm]').forEach(b=>b.onclick=()=>{ cartItems.splice(+b.dataset.rm,1); renderCart(); });
+}
+document.getElementById('addItem')?.addEventListener('click',()=>{
+  const sku=document.getElementById('ordSku').value; const qty=parseInt(document.getElementById('ordQty').value||'1',10); const unit=parseFloat(document.getElementById('ordPrice').value||'0');
+  if(!sku||!qty||!unit) return alert('SKU/Adet/Birim gerekli');
+  cartItems.push({sku,qty,unit}); renderCart();
+});
+
+// BACKUP SHARE (Web Share API)
+(function(){
+  try{
+    const container = document.querySelector('#tab-settings .card .row:last-of-type');
+    if(!container) return;
+    const btn = document.createElement('button'); btn.className='btn'; btn.textContent='Buluta Dışa Aktar (Paylaş)';
+    container.appendChild(btn);
+    btn.addEventListener('click', async ()=>{
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+      const file = new File([blob], 'eduboss-backup.json', {type:'application/json'});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        try{ await navigator.share({title:'EduBoss Yedek', text:'JSON yedeği paylaş', files:[file]}); }catch(e){}
+      }else{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='eduboss-backup.json'; a.click(); }
+    });
+  }catch(e){}
+})();
