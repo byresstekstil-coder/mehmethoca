@@ -412,3 +412,78 @@ document.getElementById('addItem')?.addEventListener('click',()=>{
     });
   }catch(e){}
 })();
+
+
+
+// ---- CLEAN NAVIGATION SYSTEM ----
+function showTab(t){
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+  const btn=document.querySelector('.nav button[data-tab="'+t+'"]'); if(btn) btn.classList.add("active");
+  document.querySelectorAll("section[id^='tab-']").forEach(s=>s.classList.add("hidden"));
+  const sec=document.getElementById("tab-"+t); if(sec) sec.classList.remove("hidden");
+  try{
+    if(t==='dash') renderDashboard&&renderDashboard();
+    if(t==='students'){ renderStudents&&renderStudents(); renderSessions&&renderSessions(); fillStudentOptions&&fillStudentOptions(); }
+    if(t==='tasks') renderTasks&&renderTasks();
+    if(t==='docs') renderDocs&&renderDocs();
+    if(t==='online'){ renderPlans&&renderPlans(); renderOnlineLists&&renderOnlineLists(); }
+    if(t==='kasa'){ renderKasaMonths&&renderKasaMonths(); renderKasa&&renderKasa(); drawKasaChart&&drawKasaChart(); renderTaksit&&renderTaksit(); }
+    if(t==='dukkan'){ renderStok&&renderStok(); renderOrders&&renderOrders(); fillOrderSku&&fillOrderSku(); }
+    if(t==='whatsapp'){}
+    if(t==='settings'){ renderSettings&&renderSettings(); }
+  }catch(e){ console.error("Tab render error",e); }
+}
+function bindTabs(){
+  document.querySelectorAll(".nav button").forEach(btn=>{
+    btn.onclick=()=>{ const t=btn.getAttribute("data-tab"); showTab(t); };
+  });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bindTabs);
+else bindTabs();
+// ---- END CLEAN NAVIGATION ----
+
+// ===== TAB CONTROLLER v2 (delegated; idempotent) =====
+(function(){
+  const showTab = (t)=>{
+    try{
+      document.querySelectorAll("section[id^='tab-']").forEach(s=>s.classList.add("hidden"));
+      const sec = document.getElementById("tab-"+t);
+      if(sec) sec.classList.remove("hidden");
+      document.querySelectorAll(".nav button[data-tab]").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===t));
+      // fire render hooks
+      try{
+        if(t==='dash' && typeof renderDashboard==='function') renderDashboard();
+        if(t==='students'){ typeof renderStudents==='function' && renderStudents(); typeof renderSessions==='function' && renderSessions(); typeof fillStudentOptions==='function' && fillStudentOptions(); }
+        if(t==='tasks' && typeof renderTasks==='function') renderTasks();
+        if(t==='docs' && typeof renderDocs==='function') renderDocs();
+        if(t==='online'){ typeof renderPlans==='function' && renderPlans(); typeof renderOnlineLists==='function' && renderOnlineLists(); }
+        if(t==='kasa'){ typeof renderKasaMonths==='function' && renderKasaMonths(); typeof renderKasa==='function' && renderKasa(); typeof drawKasaChart==='function' && drawKasaChart(); typeof renderTaksit==='function' && renderTaksit(); }
+        if(t==='dukkan'){ typeof renderStok==='function' && renderStok(); typeof renderOrders==='function' && renderOrders(); typeof fillOrderSku==='function' && fillOrderSku(); }
+      }catch(e){ console && console.warn && console.warn('render hook error', e); }
+    }catch(e){}
+  };
+  const onClick = (e)=>{
+    const btn = e.target.closest('.nav button[data-tab]');
+    if(!btn) return;
+    e.preventDefault();
+    const t = btn.getAttribute('data-tab');
+    if(!t) return;
+    location.hash = t;
+    showTab(t);
+  };
+  // single attachment
+  if(!window.__edubossTabsAttached){
+    document.addEventListener('click', onClick);
+    window.addEventListener('hashchange', ()=>{
+      const key = (location.hash||'').replace('#','') || 'dash';
+      showTab(key);
+    });
+    window.__edubossTabsAttached = true;
+  }
+  // initial
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const key = (location.hash||'').replace('#','') || 'dash';
+    showTab(key);
+  });
+})();
+// ===== /TAB CONTROLLER v2 =====
