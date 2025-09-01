@@ -41,3 +41,10 @@ section h2{margin:8px 0 12px}
 .install-tip{font-size:12px;color:var(--sub)}
 .table td.actions{white-space:nowrap}
 .canvas-wrap{background:#0e172b;border:1px solid var(--muted);border-radius:12px;padding:8px}
+
+.hero{position:relative;overflow:hidden;border-radius:16px;border:1px solid var(--muted);background:#0e172b}
+.hero img{width:100%;height:auto;display:block;opacity:.96}
+.hero .overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(11,19,34,0.2) 0%, rgba(11,19,34,0.8) 80%);}
+.hero .caption{position:absolute;left:16px;bottom:12px;color:var(--text)}
+.hero .caption .name{font-weight:800;font-size:18px}
+.hero .caption .title{font-size:12px;color:var(--sub)}

@@ -22,6 +22,12 @@
 </header>
 
 <section id="tab-dash">
+  <div class="hero" id="heroWrap">
+    <img src="/assets/owner-hero.jpg" alt="Sahip Foto">
+    <div class="overlay"></div>
+    <div class="caption"><div class="name" id="heroName">EduBoss</div><div class="title" id="heroTitle">Öğretmen Asistanı</div></div>
+  </div>
+
   <h2>Bugün & Özet</h2>
   <div class="grid">
     <div class="card"><h3>Bugünkü Program</h3><div id="todayList" class="small">Yükleniyor…</div><hr><button class="btn primary" id="btnQuickTask">+ Hızlı Görev</button></div>
@@ -130,11 +136,11 @@
       <h3>Stok</h3>
       <div class="row"><input id="stkName" placeholder="Ürün adı"><input id="stkSku" placeholder="SKU/Kod"></div>
       <div class="row"><input id="stkCat" placeholder="Kategori"><input id="stkAttr" placeholder="Beden/Renk"></div>
-      <div class="row"><input type="number" id="stkQty" placeholder="Adet"><input type="number" id="stkMin" placeholder="Min Adet (uyarı)"><input type="number" id="stkCost" placeholder="Maliyet" step="0.01"><input type="number" id="stkPrice" placeholder="Satış" step="0.01"></div>
+      <div class="row"><input type="number" id="stkQty" placeholder="Adet"><input type="number" id="stkMin" placeholder="Min Adet (uyarı)"><input type="number" id="stkCost" placeholder="Maliyet" step="0.01"><input type="number" id="stkPrice" placeholder="Satış" step="0.01"><input type="number" id="stkVAT" placeholder="KDV %" step="0.1"></div>
       <button class="btn primary" id="addStk">+ Ürün Ekle</button>
       <hr>
       <div class="search"><input id="stkSearch" placeholder="Ara…"><button class="btn" id="stkCSV">CSV Çıkar</button></div>
-      <table class="table" id="stkTable"><thead><tr><th>Ad</th><th>SKU</th><th>Kat.</th><th>Öz.</th><th>Adet</th><th>Min</th><th>Maliyet</th><th>Satış</th><th></th></tr></thead><tbody></tbody></table>
+      <table class="table" id="stkTable"><thead><tr><th>Ad</th><th>SKU</th><th>Kat.</th><th>Öz.</th><th>Adet</th><th>Min</th><th>Maliyet</th><th>Satış</th><th>KDV</th><th></th></tr></thead><tbody></tbody></table>
     </div>
     <div class="card">
       <h3>Sipariş</h3>
@@ -183,6 +189,16 @@
       <div>
         <label>Logo (PNG/JPG)</label>
         <input id="ownerLogo" type="file" accept=".png,.jpg,.jpeg">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Logo Boyutu (%)</label>
+        <input id="ownerLogoSize" type="number" min="10" max="200" step="5" placeholder="70">
+      </div>
+      <div>
+        <label>Logo Konumu</label>
+        <select id="ownerLogoPos"><option>Sol</option><option>Orta</option><option>Sağ</option></select>
       </div>
     </div>
     <div class="alert">Logo yüklerseniz fatura/fiş üstünde görüntülenir. KDV ve fatura bilgileri istendiğinde düzenlenebilir.</div>

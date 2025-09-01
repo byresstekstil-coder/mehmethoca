@@ -5,7 +5,7 @@ const $$=s=>Array.from(document.querySelectorAll(s));
 function load(){let d={};try{d=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');}catch(e){d={};}
 d.students ||= []; d.sessions ||= []; d.tasks ||= []; d.docs ||= [];
 d.online ||= {plans:[],contact:{phone:'',instagram:''}};
-d.settings ||= {ownerName:'Mehmet Ertürk', ownerTitle:'Matematik Öğretmeni & Öğrenci Koçu', ownerNote:'', vatRate:18, invoicePrefix:'ME-', invoiceSerial:1001, logoDataUrl:''};
+d.settings ||= {ownerName:'Mehmet Ertürk', ownerTitle:'Matematik Öğretmeni & Öğrenci Koçu', ownerNote:'', vatRate:18, invoicePrefix:'ME-', invoiceSerial:1001, logoDataUrl:'', logoSize:70, logoPos:'Sol'};
 d.kasa ||= []; d.stok ||= []; d.siparis ||= [];
 d.taksit ||= []; // {id,name,type,who,total,count,startISO,items:[{id,dateISO,amount,paid}]}
 return d;}
@@ -130,7 +130,7 @@ function drawKasaChart(){
   const now=new Date(); const months=[]; for(let i=5;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); }
   const sum=(arr,type,m)=>arr.filter(k=>k.type===type && new Date(k.dt).toISOString().slice(0,7)===m).reduce((s,k)=>s+(+k.amount||0),0);
   const gelir=months.map(m=>sum(data.kasa,'Gelir',m)); const gider=months.map(m=>sum(data.kasa,'Gider',m));
-  const max=Math.max(1,...gelir,...gider); const W=cvs.width-40, H=cvs.height-40, x0=30,y0=10;
+  const net=months.map((m,i)=>gelir[i]-gider[i]); const max=Math.max(1,...gelir,...gider,...net); const W=cvs.width-40, H=cvs.height-40, x0=30,y0=10;
   // axes
   ctx.strokeStyle='#5f6f9a'; ctx.lineWidth=1; ctx.strokeRect(x0,y0,W,H);
   // bars
@@ -146,6 +146,12 @@ function drawKasaChart(){
     // label
     ctx.fillStyle='#b7c4e1'; ctx.font='10px sans-serif'; ctx.fillText(months[i].slice(5), gx, y0+H+12);
   }
+  // NET line
+  ctx.beginPath();
+  for(let i=0;i<months.length;i++){
+    const val=net[i]/max; const x=x0+i*groupW+groupW/2; const y=y0+H - val*H; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle='#3aa0ff'; ctx.lineWidth=2; ctx.stroke();
 }
 
 // TAKSİT / BORÇ
@@ -171,8 +177,8 @@ function renderTaksit(){
 
 // DÜKKAN - STOK
 $("#addStk").addEventListener('click',()=>{
-  const s={id:crypto.randomUUID(), name:$("#stkName").value.trim(), sku:$("#stkSku").value.trim(), cat:$("#stkCat").value.trim(), attr:$("#stkAttr").value.trim(), qty:parseInt($("#stkQty").value||'0',10), min:parseInt($("#stkMin").value||'0',10), cost:parseFloat($("#stkCost").value||'0'), price:parseFloat($("#stkPrice").value||'0')};
-  if(!s.name||!s.sku) return alert("Ad ve SKU zorunlu"); data.stok.push(s); save(); ["stkName","stkSku","stkQty","stkMin","stkCost","stkPrice"].forEach(id=>$("#"+id).value=''); renderStok(); fillOrderSku(); renderDashboard();
+  const s={id:crypto.randomUUID(), name:$("#stkName").value.trim(), sku:$("#stkSku").value.trim(), cat:$("#stkCat").value.trim(), attr:$("#stkAttr").value.trim(), qty:parseInt($("#stkQty").value||'0',10), min:parseInt($("#stkMin").value||'0',10), cost:parseFloat($("#stkCost").value||'0'), price:parseFloat($("#stkPrice").value||'0'), vat:parseFloat($("#stkVAT").value||'')};
+  if(!s.name||!s.sku) return alert("Ad ve SKU zorunlu"); data.stok.push(s); save(); ["stkName","stkSku","stkQty","stkMin","stkCost","stkPrice","stkVAT"].forEach(id=>$("#"+id).value=''); renderStok(); fillOrderSku(); renderDashboard();
 });
 function renderStok(){ const q=($("#stkSearch").value||'').toLowerCase();
   const rows=data.stok.filter(s=>[s.name,s.sku,s.cat,s.attr].join(' ').toLowerCase().includes(q)).map(s=>`<tr>
@@ -231,8 +237,10 @@ function renderSettings(){
   $("#ownerVAT").value=(data.settings.vatRate!=null?data.settings.vatRate:18);
   $("#ownerInvPrefix").value=data.settings.invoicePrefix||'';
   $("#ownerInvSerial").value=(data.settings.invoiceSerial!=null?data.settings.invoiceSerial:1);
+  if($("#ownerLogoSize")) $("#ownerLogoSize").value=(data.settings.logoSize!=null?data.settings.logoSize:70);
+  if($("#ownerLogoPos")) $("#ownerLogoPos").value=(data.settings.logoPos||'Sol');
 }
-["ownerName","ownerTitle","ownerNote","ownerVAT","ownerInvPrefix","ownerInvSerial"].forEach(id=>$("#"+id).addEventListener('input',()=>{ data.settings.ownerName=$("#ownerName").value; data.settings.ownerTitle=$("#ownerTitle").value; data.settings.ownerNote=$("#ownerNote").value; data.settings.vatRate=parseFloat($("#ownerVAT").value||"18"); data.settings.invoicePrefix=$("#ownerInvPrefix").value||""; data.settings.invoiceSerial=parseInt($("#ownerInvSerial").value||"1",10); save(); refreshOwner(); }));
+["ownerName","ownerTitle","ownerNote","ownerVAT","ownerInvPrefix","ownerInvSerial","ownerLogoSize","ownerLogoPos"].forEach(id=>{ const el=$("#"+id); if(!el) return; el.addEventListener('input',()=>{ data.settings.ownerName=$("#ownerName").value; data.settings.ownerTitle=$("#ownerTitle").value; data.settings.ownerNote=$("#ownerNote").value; data.settings.vatRate=parseFloat($("#ownerVAT").value||"18"); data.settings.invoicePrefix=$("#ownerInvPrefix").value||""; data.settings.invoiceSerial=parseInt($("#ownerInvSerial").value||"1",10); data.settings.logoSize=parseFloat($("#ownerLogoSize")?$("#ownerLogoSize").value:"70"); data.settings.logoPos=$("#ownerLogoPos")?$("#ownerLogoPos").value:"Sol"; save(); refreshOwner(); }); });
 $("#ownerLogo").addEventListener("change", e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ data.settings.logoDataUrl=fr.result; save(); alert("Logo kaydedildi."); }; fr.readAsDataURL(f); });
 $("#backupExport").addEventListener('click',()=>downloadJSON('eduboss-backup',data));
 $("#backupImportBtn").addEventListener('click',()=>$("#backupImport").click());
@@ -285,23 +293,31 @@ function importJSON(e,onData){ const f=e.target.files[0]; if(!f) return; const f
 // Install hint & SW
 let deferredPrompt=null; window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; $("#installTip").textContent="Menü > Ana ekrana ekle ile yükleyebilirsin."; });
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js').catch(console.error)); }
+// AUTO BACKUP
+(function(){ try{
+  const today=new Date().toISOString().slice(0,10);
+  const key='eduboss_autosnap_'+today;
+  if(!localStorage.getItem(key)){
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+}catch(e){} })();
 
 
 // Invoice (Fatura) printable
 function printInvoice(kind,id){
   const name=(data.settings&&data.settings.ownerName)||'Mehmet Ertürk';
   const title=(data.settings&&data.settings.ownerTitle)||'Matematik Öğretmeni & Öğrenci Koçu';
-  const vat=(data.settings&&data.settings.vatRate!=null)? Number(data.settings.vatRate):18;
+  let vat=(data.settings&&data.settings.vatRate!=null)? Number(data.settings.vatRate):18;
   const prefix=(data.settings&&data.settings.invoicePrefix)||'';
   const serial=(data.settings&&data.settings.invoiceSerial!=null)? data.settings.invoiceSerial:1;
   const logo=(data.settings&&data.settings.logoDataUrl)||'';
   const now=new Date();
   if(kind==='order'){
     const o=data.siparis.find(x=>x.id===id); if(!o) return; const item=data.stok.find(s=>s.sku===o.sku);
-    const total=(o.qty*o.unit)||0; const kdv=total*(vat/100); const net=total-kdv;
+    const total=(o.qty*o.unit)||0; const prod=(data.stok.find(s=>s.sku===o.sku)||{}); vat = (prod.vat!=null && !Number.isNaN(prod.vat))? Number(prod.vat):vat; const kdv=total*(vat/100); const net=total-kdv;
     const invNo = `${prefix}${String(serial).padStart(6,'0')}`;
-    const logoHtml = logo? `<img src="${logo}" style="max-height:64px;object-fit:contain">` : '';
-    const html = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">${logoHtml}<div><h2 style="margin:0">${name}</h2><div>${title}</div></div></div><hr>
+    const sz=(data.settings&&data.settings.logoSize!=null)? Number(data.settings.logoSize):70; const pos=(data.settings&&data.settings.logoPos)||'Sol'; const just = pos==='Orta'?'center':(pos==='Sağ'?'flex-end':'flex-start'); const logoHtml = logo? `<div style="display:flex;justify-content:${just};align-items:center;width:40%"><img src="${logo}" style="max-height:${sz}px;object-fit:contain"></div>` : '';
+    const html = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">${logoHtml}<div style="flex:1"><h2 style="margin:0">${name}</h2><div>${title}</div></div></div><hr>
       <h3>FATURA</h3>
       <div>Fatura No: <b>${invNo}</b></div>
       <div>Tarih: ${new Date(o.date).toLocaleDateString()}</div>
