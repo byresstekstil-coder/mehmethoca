@@ -5,7 +5,7 @@ const $$=s=>Array.from(document.querySelectorAll(s));
 function load(){let d={};try{d=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');}catch(e){d={};}
 d.students ||= []; d.sessions ||= []; d.tasks ||= []; d.docs ||= [];
 d.online ||= {plans:[],contact:{phone:'',instagram:''}};
-d.settings ||= {ownerName:'Mehmet Ertürk', ownerTitle:'Matematik Öğretmeni & Öğrenci Koçu', ownerNote:''};
+d.settings ||= {ownerName:'Mehmet Ertürk', ownerTitle:'Matematik Öğretmeni & Öğrenci Koçu', ownerNote:'', vatRate:18, invoicePrefix:'ME-', invoiceSerial:1001, logoDataUrl:''};
 d.kasa ||= []; d.stok ||= []; d.siparis ||= [];
 d.taksit ||= []; // {id,name,type,who,total,count,startISO,items:[{id,dateISO,amount,paid}]}
 return d;}
@@ -74,7 +74,7 @@ $("#stExportCSV").addEventListener('click',()=>downloadCSV('ogrenciler',['name',
 $("#stImportBtn").addEventListener('click',()=>$("#stImport").click());
 $("#stImport").addEventListener('change',e=>importJSON(e,arr=>{ if(Array.isArray(arr)){ data.students=arr; save(); renderStudents(); fillStudentOptions(); } }));
 $("#addSession").addEventListener('click',()=>{ if(!data.students.length) return alert("Önce öğrenci ekleyin."); const sId=$("#sesStudent").value; const dt=$("#sesDate").value; if(!dt) return alert("Tarih girin."); data.sessions.push({id:crypto.randomUUID(), studentId:sId, date:new Date(dt).toISOString(), duration:parseInt($("#sesDuration").value||'60',10), topic:$("#sesTopic").value.trim()}); save(); $("#sesTopic").value=''; renderSessions(); renderDashboard(); });
-function renderSessions(){ const rows=[...data.sessions].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(s=>{ const st=data.students.find(x=>x.id===s.studentId); return `<tr><td>${st?st.name:'—'}</td><td>${new Date(s.date).toLocaleString()}</td><td>${s.duration||0} dk</td><td>${s.topic||''}</td><td class="actions"><button class="btn danger" data-dels="${s.id}">Sil</button></td></tr>`; }).join(""); $("#sessionTable tbody").innerHTML = rows || '<tr><td colspan="5" class="small">Kayıt yok.</td></tr>'; $$("#sessionTable [data-dels]").forEach(b=>b.onclick=()=>{ data.sessions=data.sessions.filter(x=>x.id!==b.dataset.dels); save(); renderSessions(); renderDashboard(); });}
+function renderSessions(){ const rows=[...data.sessions].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(s=>{ const st=data.students.find(x=>x.id===s.studentId); return `<tr ${new Date(it.dateISO)<new Date()&&!it.paid?'style=\"background:#402\"':''}><td>${st?st.name:'—'}</td><td>${new Date(s.date).toLocaleString()}</td><td>${s.duration||0} dk</td><td>${s.topic||''}</td><td class="actions"><button class="btn danger" data-dels="${s.id}">Sil</button></td></tr>`; }).join(""); $("#sessionTable tbody").innerHTML = rows || '<tr><td colspan="5" class="small">Kayıt yok.</td></tr>'; $$("#sessionTable [data-dels]").forEach(b=>b.onclick=()=>{ data.sessions=data.sessions.filter(x=>x.id!==b.dataset.dels); save(); renderSessions(); renderDashboard(); });}
 
 // TASKS
 $("#addTask").addEventListener('click',()=>{ const title=$("#taskTitle").value.trim(); if(!title) return alert("Başlık gerekli."); const t={id:crypto.randomUUID(), title, cat:$("#taskCat").value, due:$("#taskDue").value?new Date($("#taskDue").value).toISOString():null, prio:$("#taskPrio").value, note:$("#taskNote").value.trim(), done:false}; data.tasks.push(t); save(); $("#taskTitle").value=''; $("#taskNote").value=''; $("#taskDue").value=''; renderTasks(); renderDashboard();});
@@ -159,7 +159,7 @@ $("#txCreate").addEventListener('click',()=>{
 });
 function renderTaksit(){
   const rows=data.taksit.flatMap(plan=>plan.items.map((it,idx)=>({plan, it, idx}))).sort((a,b)=>new Date(a.it.dateISO)-new Date(b.it.dateISO)).map(obj=>{
-    const {plan,it,idx}=obj; return `<tr>
+    const {plan,it,idx}=obj; return `<tr ${new Date(it.dateISO)<new Date()&&!it.paid?'style=\"background:#402\"':''}>
       <td>${plan.name} (${plan.type})</td><td>${new Date(it.dateISO).toLocaleDateString()}</td><td>${idx+1}/${plan.count}</td><td>₺${(+it.amount||0).toFixed(2)}</td><td>${it.paid?'<span class="pill">Ödendi</span>':'<span class="pill">Açık</span>'}</td>
       <td class="actions"><button class="btn ok" data-tpay="${plan.id}:${it.id}">${it.paid?'Geri Al':'Öde'}</button><button class="btn" data-tkas="${plan.id}:${it.id}">Kasa</button></td>
     </tr>`;
@@ -198,13 +198,14 @@ $("#addOrd").addEventListener('click',()=>{
 function renderOrders(){ const q=($("#ordSearch").value||'').toLowerCase();
   const rows=data.siparis.filter(o=>[o.customer,o.phone,o.sku,o.method,o.note].join(' ').toLowerCase().includes(q)).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(o=>{
     const item=data.stok.find(s=>s.sku===o.sku); const tutar=(o.qty*o.unit)||0;
-    return `<tr><td>${new Date(o.date).toLocaleString()}</td><td>${o.customer}</td><td>${item?item.name:o.sku}</td><td>${o.qty}</td><td>₺${tutar.toFixed(2)}</td><td>${o.method}</td><td>${o.note||''}</td>
+    return `<tr ${new Date(it.dateISO)<new Date()&&!it.paid?'style=\"background:#402\"':''}><td>${new Date(o.date).toLocaleString()}</td><td>${o.customer}</td><td>${item?item.name:o.sku}</td><td>${o.qty}</td><td>₺${tutar.toFixed(2)}</td><td>${o.method}</td><td>${o.note||''}</td>
     <td class="actions"><button class="btn" data-wa="${o.phone||''}">WA</button><button class="btn" data-rec="${o.id}">Fiş</button><button class="btn danger" data-odel="${o.id}">Sil</button></td></tr>`;
   }).join("");
   $("#ordTable tbody").innerHTML=rows || '<tr><td colspan="8" class="small">Kayıt yok.</td></tr>';
   $$("#ordTable [data-odel]").forEach(b=>b.onclick=()=>{ data.siparis=data.siparis.filter(x=>x.id!==b.dataset.odel); save(); renderOrders(); });
   $$("#ordTable [data-wa]").forEach(b=>b.onclick=()=>openWA(b.dataset.wa,'Siparişiniz kaydedildi. Teşekkürler.'));
   $$("#ordTable [data-rec]").forEach(b=>b.onclick=()=>printReceipt('order', b.dataset.rec));
+  $$("#ordTable [data-inv]").forEach(b=>b.onclick=()=>printInvoice('order', b.dataset.inv));
 }
 $("#ordCSV").addEventListener('click',()=>downloadCSV('siparis',['date','customer','phone','sku','qty','unit','method','note'],data.siparis));
 
@@ -223,8 +224,16 @@ function buildWAText(){ const t=$("#waTemplate").value, a=$("#waVar1").value||''
 function openWA(phone,text){ const clean=(phone||'').replace(/\D/g,''); const url=`https://wa.me/${clean?clean:''}?text=${encodeURIComponent(text||'Merhaba')}`; window.open(url,'_blank'); }
 
 // Settings & backup
-function renderSettings(){ $("#ownerName").value=data.settings.ownerName||''; $("#ownerTitle").value=data.settings.ownerTitle||''; $("#ownerNote").value=data.settings.ownerNote||''; }
-["ownerName","ownerTitle","ownerNote"].forEach(id=>$("#"+id).addEventListener('input',()=>{ data.settings.ownerName=$("#ownerName").value; data.settings.ownerTitle=$("#ownerTitle").value; data.settings.ownerNote=$("#ownerNote").value; save(); refreshOwner(); }));
+function renderSettings(){
+  $("#ownerName").value=data.settings.ownerName||'';
+  $("#ownerTitle").value=data.settings.ownerTitle||'';
+  $("#ownerNote").value=data.settings.ownerNote||'';
+  $("#ownerVAT").value=(data.settings.vatRate!=null?data.settings.vatRate:18);
+  $("#ownerInvPrefix").value=data.settings.invoicePrefix||'';
+  $("#ownerInvSerial").value=(data.settings.invoiceSerial!=null?data.settings.invoiceSerial:1);
+}
+["ownerName","ownerTitle","ownerNote","ownerVAT","ownerInvPrefix","ownerInvSerial"].forEach(id=>$("#"+id).addEventListener('input',()=>{ data.settings.ownerName=$("#ownerName").value; data.settings.ownerTitle=$("#ownerTitle").value; data.settings.ownerNote=$("#ownerNote").value; data.settings.vatRate=parseFloat($("#ownerVAT").value||"18"); data.settings.invoicePrefix=$("#ownerInvPrefix").value||""; data.settings.invoiceSerial=parseInt($("#ownerInvSerial").value||"1",10); save(); refreshOwner(); }));
+$("#ownerLogo").addEventListener("change", e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ data.settings.logoDataUrl=fr.result; save(); alert("Logo kaydedildi."); }; fr.readAsDataURL(f); });
 $("#backupExport").addEventListener('click',()=>downloadJSON('eduboss-backup',data));
 $("#backupImportBtn").addEventListener('click',()=>$("#backupImport").click());
 $("#backupImport").addEventListener('change',e=>importJSON(e,obj=>{ if(obj&&typeof obj==='object'){ localStorage.setItem(STORE_KEY, JSON.stringify(obj)); data=load(); alert("Yedek yüklendi."); location.reload(); } }));
@@ -276,3 +285,43 @@ function importJSON(e,onData){ const f=e.target.files[0]; if(!f) return; const f
 // Install hint & SW
 let deferredPrompt=null; window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; $("#installTip").textContent="Menü > Ana ekrana ekle ile yükleyebilirsin."; });
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js').catch(console.error)); }
+
+
+// Invoice (Fatura) printable
+function printInvoice(kind,id){
+  const name=(data.settings&&data.settings.ownerName)||'Mehmet Ertürk';
+  const title=(data.settings&&data.settings.ownerTitle)||'Matematik Öğretmeni & Öğrenci Koçu';
+  const vat=(data.settings&&data.settings.vatRate!=null)? Number(data.settings.vatRate):18;
+  const prefix=(data.settings&&data.settings.invoicePrefix)||'';
+  const serial=(data.settings&&data.settings.invoiceSerial!=null)? data.settings.invoiceSerial:1;
+  const logo=(data.settings&&data.settings.logoDataUrl)||'';
+  const now=new Date();
+  if(kind==='order'){
+    const o=data.siparis.find(x=>x.id===id); if(!o) return; const item=data.stok.find(s=>s.sku===o.sku);
+    const total=(o.qty*o.unit)||0; const kdv=total*(vat/100); const net=total-kdv;
+    const invNo = `${prefix}${String(serial).padStart(6,'0')}`;
+    const logoHtml = logo? `<img src="${logo}" style="max-height:64px;object-fit:contain">` : '';
+    const html = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">${logoHtml}<div><h2 style="margin:0">${name}</h2><div>${title}</div></div></div><hr>
+      <h3>FATURA</h3>
+      <div>Fatura No: <b>${invNo}</b></div>
+      <div>Tarih: ${new Date(o.date).toLocaleDateString()}</div>
+      <div>Müşteri: ${o.customer||'-'} (${o.phone||'-'})</div>
+      <table style="width:100%;border-collapse:collapse;margin-top:8px">
+        <thead><tr><th style="text-align:left;border-bottom:1px solid #ccc;padding:6px">Ürün</th><th style="text-align:right;border-bottom:1px solid #ccc;padding:6px">Adet</th><th style="text-align:right;border-bottom:1px solid #ccc;padding:6px">Birim</th><th style="text-align:right;border-bottom:1px solid #ccc;padding:6px">Tutar</th></tr></thead>
+        <tbody><tr><td style="padding:6px">${item?item.name:o.sku} (${o.sku})</td><td style="text-align:right;padding:6px">${o.qty}</td><td style="text-align:right;padding:6px">₺${(+o.unit||0).toFixed(2)}</td><td style="text-align:right;padding:6px">₺${total.toFixed(2)}</td></tr></tbody>
+      </table>
+      <div style="margin-top:8px">Ara Toplam: ₺${net.toFixed(2)}</div>
+      <div>KDV (%${vat}): ₺${kdv.toFixed(2)}</div>
+      <div><b>GENEL TOPLAM: ₺${total.toFixed(2)}</b></div>
+      <hr><div style="font-size:12px;color:#666">Oluşturma: ${now.toLocaleString()}</div>`;
+    const w=window.open('','_blank'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Fatura</title><style>body{font-family:Arial;padding:24px;} h2{margin:0} hr{border:0;border-top:1px solid #ccc;margin:12px 0}</style></head><body>${html}<script>window.onload=()=>window.print();</script></body></html>`); w.document.close();
+    data.settings.invoiceSerial = (Number(serial)||0) + 1; save(); if($("#ownerInvSerial")) $("#ownerInvSerial").value=data.settings.invoiceSerial;
+  }
+}
+}
+
+// Stok içe aktarma
+const stkImportInput=document.createElement('input'); stkImportInput.type='file'; stkImportInput.accept='.csv'; stkImportInput.classList.add('hidden'); document.body.appendChild(stkImportInput);
+const stkImportBtn=document.createElement('button'); stkImportBtn.className='btn'; stkImportBtn.textContent='CSV İçe Aktar'; document.querySelector("#tab-dukkan .card").appendChild(stkImportBtn);
+stkImportBtn.addEventListener('click',()=>stkImportInput.click());
+stkImportInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ const lines=fr.result.split(/\\r?\\n/).filter(l=>l.trim()); const cols=lines.shift().split(','); lines.forEach(l=>{ const parts=l.split(','); const o={}; cols.forEach((c,i)=>o[c.trim()]=parts[i]); if(o.name&&o.sku){ data.stok.push({id:crypto.randomUUID(), name:o.name, sku:o.sku, cat:o.cat, attr:o.attr, qty:parseInt(o.qty||'0',10), min:parseInt(o.min||'0',10), cost:parseFloat(o.cost||'0'), price:parseFloat(o.price||'0')}); }}); save(); renderStok(); fillOrderSku(); renderDashboard(); }; fr.readAsText(f); });
