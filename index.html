@@ -9,8 +9,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <link rel="stylesheet" href="/styles.css">
-  <meta name="description" content="Okul + dershane + özel ders + dükkan + evrak takibi: Hepsi tek uygulamada.">
+  <link rel="stylesheet" href="/style.css">
+  <meta name="description" content="Okul + dershane + özel ders + dükkan + evrak + kasa takibi.">
 </head>
 <body>
   <div class="container">
@@ -26,14 +26,17 @@
         <button data-tab="dash" class="active">Panel</button>
         <button data-tab="students">Öğrenciler</button>
         <button data-tab="tasks">Görevler</button>
-        <button data-tab="docs">Evrak Takibi</button>
-        <button data-tab="online">Online Ders</button>
+        <button data-tab="docs">Evrak</button>
+        <button data-tab="online">Online</button>
+        <button data-tab="kasa">Kasa</button>
+        <button data-tab="dukkan">Dükkan</button>
+        <button data-tab="whats">WhatsApp</button>
         <button data-tab="settings">Ayarlar</button>
       </div>
     </header>
 
     <section id="tab-dash">
-      <h2>Bugün & Öncelikler</h2>
+      <h2>Bugün & Özet</h2>
       <div class="grid">
         <div class="card">
           <h3>Bugünkü Program</h3>
@@ -46,13 +49,14 @@
           <div id="upcomingDocs" class="small">Yükleniyor…</div>
         </div>
         <div class="card">
-          <h3>Öğrenci Takibi</h3>
+          <h3>Kasa Özeti</h3>
           <div class="kv">
-            <span class="k">Toplam Öğrenci:</span><span class="v" id="metricStudents">0</span>
-            <span class="k">Bu Hafta Ders:</span><span class="v" id="metricSessions">0</span>
+            <span class="k">Bu Ay Gelir:</span><span class="v" id="kGelir">₺0</span>
+            <span class="k">Bu Ay Gider:</span><span class="v" id="kGider">₺0</span>
+            <span class="k">Net:</span><span class="v" id="kNet">₺0</span>
           </div>
           <hr>
-          <div id="recentSessions" class="small">Son eklenen ders oturumları burada görünecek.</div>
+          <div id="kasaMini" class="small">Son hareketler burada görünecek.</div>
         </div>
       </div>
       <p class="install-tip" id="installTip"></p>
@@ -62,27 +66,14 @@
       <h2>Öğrenciler</h2>
       <div class="card">
         <div class="row">
-          <div>
-            <label>Ad Soyad</label>
-            <input id="stName" placeholder="Örn: Ali Yılmaz">
-          </div>
-          <div>
-            <label>Sınıf/Seviye</label>
-            <input id="stGrade" placeholder="Örn: 11. Sınıf • TYT">
-          </div>
+          <div><label>Ad Soyad</label><input id="stName" placeholder="Örn: Ali Yılmaz"></div>
+          <div><label>Seviye</label><input id="stGrade" placeholder="Örn: 11. Sınıf • TYT"></div>
         </div>
         <div class="row">
-          <div>
-            <label>İletişim</label>
-            <input id="stContact" placeholder="Telefon, Veli vb.">
-          </div>
-          <div>
-            <label>Hedef</label>
-            <input id="stGoal" placeholder="Örn: TYT 70+ net">
-          </div>
+          <div><label>İletişim (Tel)</label><input id="stContact" placeholder="905551112233"></div>
+          <div><label>Hedef</label><input id="stGoal" placeholder="Örn: TYT 70+ net"></div>
         </div>
-        <label>Not</label>
-        <textarea id="stNote" placeholder="Öğrenci hakkında kısa notlar"></textarea>
+        <label>Not</label><textarea id="stNote" placeholder="Öğrenci hakkında kısa notlar"></textarea>
         <button class="btn primary" id="addStudent">+ Öğrenci Ekle</button>
       </div>
 
@@ -90,6 +81,7 @@
         <div class="search">
           <input id="stSearch" placeholder="Ara…">
           <button class="btn" id="stExport">Dışa Aktar (JSON)</button>
+          <button class="btn" id="stExportCSV">CSV Çıkar</button>
           <input type="file" id="stImport" class="hidden" accept=".json">
           <button class="btn" id="stImportBtn">İçe Aktar</button>
         </div>
@@ -102,24 +94,12 @@
       <div class="card">
         <h3>Oturum Ekle</h3>
         <div class="row">
-          <div>
-            <label>Öğrenci</label>
-            <select id="sesStudent"></select>
-          </div>
-          <div>
-            <label>Tarih & Saat</label>
-            <input type="datetime-local" id="sesDate">
-          </div>
+          <div><label>Öğrenci</label><select id="sesStudent"></select></div>
+          <div><label>Tarih & Saat</label><input type="datetime-local" id="sesDate"></div>
         </div>
         <div class="row">
-          <div>
-            <label>Süre (dk)</label>
-            <input type="number" id="sesDuration" value="60">
-          </div>
-          <div>
-            <label>Konu/Not</label>
-            <input id="sesTopic" placeholder="Örn: Denklemler, geometri…">
-          </div>
+          <div><label>Süre (dk)</label><input type="number" id="sesDuration" value="60"></div>
+          <div><label>Konu/Not</label><input id="sesTopic" placeholder="Denklemler…"></div>
         </div>
         <button class="btn primary" id="addSession">+ Oturum Kaydet</button>
       </div>
@@ -137,38 +117,16 @@
       <h2>Görevler</h2>
       <div class="card">
         <div class="row">
-          <div>
-            <label>Başlık</label>
-            <input id="taskTitle" placeholder="Örn: 11-A yazılı soruları">
-          </div>
-          <div>
-            <label>Kategori</label>
-            <select id="taskCat">
-              <option>Okul</option>
-              <option>Dershane</option>
-              <option>Özel Ders</option>
-              <option>Dükkan</option>
-              <option>Evrak</option>
-              <option>Diğer</option>
-            </select>
-          </div>
+          <div><label>Başlık</label><input id="taskTitle" placeholder="Örn: 11-A yazılı"></div>
+          <div><label>Kategori</label><select id="taskCat">
+            <option>Okul</option><option>Dershane</option><option>Özel Ders</option><option>Dükkan</option><option>Evrak</option><option>Diğer</option>
+          </select></div>
         </div>
         <div class="row">
-          <div>
-            <label>Bitiş Tarihi</label>
-            <input type="datetime-local" id="taskDue">
-          </div>
-          <div>
-            <label>Öncelik</label>
-            <select id="taskPrio">
-              <option>Orta</option>
-              <option>Yüksek</option>
-              <option>Düşük</option>
-            </select>
-          </div>
+          <div><label>Bitiş</label><input type="datetime-local" id="taskDue"></div>
+          <div><label>Öncelik</label><select id="taskPrio"><option>Orta</option><option>Yüksek</option><option>Düşük</option></select></div>
         </div>
-        <label>Not</label>
-        <textarea id="taskNote" placeholder="Açıklama…"></textarea>
+        <label>Not</label><textarea id="taskNote"></textarea>
         <button class="btn primary" id="addTask">+ Görev Ekle</button>
       </div>
 
@@ -176,10 +134,10 @@
         <div class="search">
           <input id="taskSearch" placeholder="Ara…">
           <select id="taskFilter">
-            <option value="">Tümü</option>
-            <option>Okul</option><option>Dershane</option><option>Özel Ders</option><option>Dükkan</option><option>Evrak</option><option>Diğer</option>
+            <option value="">Tümü</option><option>Okul</option><option>Dershane</option><option>Özel Ders</option><option>Dükkan</option><option>Evrak</option><option>Diğer</option>
           </select>
           <button class="btn" id="taskExport">Dışa Aktar (JSON)</button>
+          <button class="btn" id="taskCSV">CSV Çıkar</button>
           <input type="file" id="taskImport" class="hidden" accept=".json">
           <button class="btn" id="taskImportBtn">İçe Aktar</button>
         </div>
@@ -191,36 +149,19 @@
     </section>
 
     <section id="tab-docs" class="hidden">
-      <h2>Evrak Takibi</h2>
+      <h2>Evrak</h2>
       <div class="card">
         <div class="row">
-          <div>
-            <label>Kurum</label>
-            <select id="docOffice">
-              <option>Vergi Dairesi</option>
-              <option>Adliye</option>
-              <option>MEB</option>
-              <option>Bankalar</option>
-              <option>Diğer</option>
-            </select>
-          </div>
-          <div>
-            <label>Belge/İşlem</label>
-            <input id="docType" placeholder="Örn: İtiraz Dilekçesi, IBAN iadesi…">
-          </div>
+          <div><label>Kurum</label><select id="docOffice">
+            <option>Vergi Dairesi</option><option>Adliye</option><option>MEB</option><option>Bankalar</option><option>Diğer</option>
+          </select></div>
+          <div><label>Belge/İşlem</label><input id="docType"></div>
         </div>
         <div class="row">
-          <div>
-            <label>Takip No</label>
-            <input id="docTrack" placeholder="Opsiyonel">
-          </div>
-          <div>
-            <label>Son Tarih</label>
-            <input type="date" id="docDue">
-          </div>
+          <div><label>Takip No</label><input id="docTrack"></div>
+          <div><label>Son Tarih</label><input type="date" id="docDue"></div>
         </div>
-        <label>Not</label>
-        <textarea id="docNote" placeholder="Ek açıklamalar, istenen belgeler…"></textarea>
+        <label>Not</label><textarea id="docNote"></textarea>
         <button class="btn primary" id="addDoc">+ Evrak Ekle</button>
       </div>
 
@@ -228,6 +169,7 @@
         <div class="search">
           <input id="docSearch" placeholder="Ara…">
           <button class="btn" id="docExport">Dışa Aktar (JSON)</button>
+          <button class="btn" id="docCSV">CSV Çıkar</button>
           <input type="file" id="docImport" class="hidden" accept=".json">
           <button class="btn" id="docImportBtn">İçe Aktar</button>
         </div>
@@ -236,62 +178,175 @@
           <tbody></tbody>
         </table>
       </div>
-      <div class="alert">İpucu: Evrak için ayrı hatırlatma oluşturmak isterseniz Görevler sekmesinde "Kategori: Evrak" olarak ayrıca ekleyin.</div>
     </section>
 
     <section id="tab-online" class="hidden">
-      <h2>Online Ders Fiyat & Başvuru</h2>
+      <h2>Online Ders</h2>
       <div class="grid">
         <div class="card">
-          <h3>Fiyat Kartları</h3>
+          <h3>Planlar</h3>
           <div id="planList"></div>
           <hr>
           <div class="row">
-            <input id="planName" placeholder="Paket adı (Örn: TYT Başlangıç)">
+            <input id="planName" placeholder="Paket adı">
             <input id="planPrice" placeholder="Aylık fiyat (₺)">
           </div>
-          <label>Açıklama</label>
-          <textarea id="planDesc" placeholder="Paket içeriği (haftalık ders, ödev, deneme vb.)"></textarea>
+          <label>Açıklama</label><textarea id="planDesc"></textarea>
           <button class="btn primary" id="addPlan">+ Plan Ekle</button>
         </div>
         <div class="card">
           <h3>Paylaşım</h3>
-          <p>Instagram için kartların ekran görüntüsünü alıp paylaşabilirsiniz. Başvuru butonu WhatsApp'a yönlendirir.</p>
           <div class="row">
-            <input id="contactPhone" placeholder="WhatsApp Tel: 90555xxxxxxx">
-            <input id="contactIG" placeholder="Instagram kullanıcı adı (opsiyonel)">
+            <input id="contactPhone" placeholder="WhatsApp Tel: 9055…">
+            <input id="contactIG" placeholder="Instagram kullanıcı adı">
           </div>
           <button class="btn" id="previewOnline">Öğrenci Görünümü Aç</button>
         </div>
       </div>
     </section>
 
-    <section id="tab-settings" class="hidden">
-      <h2>Ayarlar</h2>
+    <section id="tab-kasa" class="hidden">
+      <h2>Kasa (Gelir-Gider & Ödemeler)</h2>
       <div class="card">
         <div class="row">
-          <div>
-            <label>İsim</label>
-            <input id="ownerName" placeholder="Adınız">
-          </div>
-          <div>
-            <label>Unvan</label>
-            <input id="ownerTitle" placeholder="Matematik Öğretmeni & Öğrenci Koçu">
-          </div>
+          <div><label>Tür</label><select id="kkType"><option>Gelir</option><option>Gider</option></select></div>
+          <div><label>Kaynak/Kategori</label><select id="kkCat">
+            <option>Özel Ders</option><option>Dershane</option><option>Okul</option><option>Dükkan Satış</option><option>Evrak/Harç</option><option>Diğer</option>
+          </select></div>
         </div>
-        <label>Not</label>
-        <textarea id="ownerNote" placeholder="Kısa biyografi/şikayet/özel notlar…"></textarea>
         <div class="row">
-          <button class="btn" id="backupExport">Tüm Verileri Dışa Aktar</button>
+          <div><label>Tarih & Saat</label><input type="datetime-local" id="kkDate"></div>
+          <div><label>Tutar (₺)</label><input type="number" id="kkAmount" step="0.01"></div>
+        </div>
+        <div class="row">
+          <div><label>Yöntem</label><select id="kkMethod"><option>Nakit</option><option>Kredi Kartı</option><option>EFT/Havale</option></select></div>
+          <div><label>Karşı Taraf</label><input id="kkWho" placeholder="Müşteri/Öğrenci/Kurum"></div>
+        </div>
+        <label>Açıklama</label><textarea id="kkNote"></textarea>
+        <button class="btn primary" id="addKK">+ Kayıt Ekle</button>
+      </div>
+
+      <div class="card">
+        <div class="search">
+          <input id="kkSearch" placeholder="Ara…">
+          <select id="kkMonth"></select>
+          <button class="btn" id="kkExport">CSV Çıkar</button>
+          <button class="btn" id="kkTemplate">CSV Şablon</button>
+        </div>
+        <table class="table" id="kkTable">
+          <thead><tr><th>Tarih</th><th>Tür</th><th>Kat.</th><th>Tutar</th><th>Yöntem</th><th>Kim</th><th>Açıklama</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-dukkan" class="hidden">
+      <h2>Dükkan (Stok & Sipariş)</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Stok</h3>
+          <div class="row">
+            <input id="stkName" placeholder="Ürün adı">
+            <input id="stkSku" placeholder="SKU/Kod">
+          </div>
+          <div class="row">
+            <input id="stkCat" placeholder="Kategori">
+            <input id="stkAttr" placeholder="Beden/Renk">
+          </div>
+          <div class="row">
+            <input type="number" id="stkQty" placeholder="Adet">
+            <input type="number" id="stkCost" placeholder="Maliyet (₺)" step="0.01">
+            <input type="number" id="stkPrice" placeholder="Satış (₺)" step="0.01">
+          </div>
+          <button class="btn primary" id="addStk">+ Ürün Ekle</button>
+          <hr>
+          <div class="search">
+            <input id="stkSearch" placeholder="Ara…">
+            <button class="btn" id="stkCSV">CSV Çıkar</button>
+            <button class="btn" id="stkTemplate">CSV Şablon</button>
+          </div>
+          <table class="table" id="stkTable">
+            <thead><tr><th>Ad</th><th>SKU</th><th>Kat.</th><th>Öz.</th><th>Adet</th><th>Maliyet</th><th>Satış</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Sipariş</h3>
+          <div class="row">
+            <input id="ordCust" placeholder="Müşteri Adı">
+            <input id="ordPhone" placeholder="Telefon (9055…)">
+          </div>
+          <div class="row">
+            <select id="ordSku"></select>
+            <input type="number" id="ordQty" value="1">
+            <input type="number" id="ordPrice" placeholder="Birim (₺)" step="0.01">
+          </div>
+          <div class="row">
+            <input type="datetime-local" id="ordDate">
+            <select id="ordMethod"><option>Nakit</option><option>Kart</option><option>EFT</option></select>
+          </div>
+          <label>Not</label><textarea id="ordNote"></textarea>
+          <button class="btn primary" id="addOrd">+ Sipariş Kaydet</button>
+          <hr>
+          <div class="search">
+            <input id="ordSearch" placeholder="Ara…">
+            <button class="btn" id="ordCSV">CSV Çıkar</button>
+            <button class="btn" id="ordTemplate">CSV Şablon</button>
+          </div>
+          <table class="table" id="ordTable">
+            <thead><tr><th>Tarih</th><th>Müşteri</th><th>Ürün</th><th>Adet</th><th>Tutar</th><th>Yöntem</th><th>Not</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-whats" class="hidden">
+      <h2>WhatsApp Otomatik Metin</h2>
+      <div class="card">
+        <div class="row">
+          <select id="waTemplate">
+            <option value="randevu">Ders Randevu</option>
+            <option value="odeme">Ödeme Hatırlatma</option>
+            <option value="evrak">Evrak Takip</option>
+            <option value="siparis">Sipariş Onayı</option>
+          </select>
+          <input id="waPhone" placeholder="Telefon (9055…)">
+        </div>
+        <label>Değişkenler</label>
+        <div class="row">
+          <input id="waVar1" placeholder="Ad/Öğrenci/Kurum">
+          <input id="waVar2" placeholder="Tarih/Saat ya da Tutar">
+        </div>
+        <label>Önizleme</label>
+        <textarea id="waPreview"></textarea>
+        <div class="row">
+          <button class="btn" id="waCompose">WhatsApp'ta Aç</button>
+          <button class="btn" id="waCopy">Metni Kopyala</button>
+        </div>
+      </div>
+      <div class="alert">İpucu: Öğrenci, sipariş ve evrak tablolarında hızlı WhatsApp kısayolları da vardır.</div>
+    </section>
+
+    <section id="tab-settings" class="hidden">
+      <h2>Ayarlar & Yedek</h2>
+      <div class="card">
+        <div class="row">
+          <div><label>İsim</label><input id="ownerName" placeholder="Adınız"></div>
+          <div><label>Unvan</label><input id="ownerTitle" placeholder="Matematik Öğretmeni & Öğrenci Koçu"></div>
+        </div>
+        <label>Not</label><textarea id="ownerNote" placeholder="Kısa not…"></textarea>
+        <div class="row">
+          <button class="btn" id="backupExport">Tüm Verileri Dışa Aktar (JSON)</button>
           <input type="file" id="backupImport" class="hidden" accept=".json">
           <button class="btn" id="backupImportBtn">Yedekten Yükle</button>
           <button class="btn danger" id="wipeAll">Tüm Verileri Sıfırla</button>
         </div>
       </div>
-      <div class="alert">Veriler cihazınızda saklanır (offline). Düzenli olarak "Tüm verileri dışa aktar" yaparak yedek alınız.</div>
     </section>
 
-    <footer>© <span id="year"></span> EduBoss • Hazırlayan: Mehmet Ertürk için kişisel kullanım</footer>
+    <footer>© <span id="year"></span> EduBoss • Mehmet Ertürk için hazırlandı</footer>
   </div>
 
   <script src="/app.js"></script>
