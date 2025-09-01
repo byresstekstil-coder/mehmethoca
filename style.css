@@ -48,3 +48,5 @@ section h2{margin:8px 0 12px}
 .hero .caption{position:absolute;left:16px;bottom:12px;color:var(--text)}
 .hero .caption .name{font-weight:800;font-size:18px}
 .hero .caption .title{font-size:12px;color:var(--sub)}
+
+.nav [data-tab].active{background:var(--primary);color:#fff}
