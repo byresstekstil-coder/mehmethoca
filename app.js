@@ -1,4 +1,9 @@
 
+// ===== GLOBAL GUARD =====
+window.addEventListener('error', function(e){ try{ console.warn('JS error captured:', e.message); }catch(_){} });
+window.addEventListener('unhandledrejection', function(e){ try{ console.warn('Promise rejection:', e.reason); }catch(_){} });
+// ===== /GLOBAL GUARD =====
+
 const STORE_KEY='eduboss_data';
 const $=s=>document.querySelector(s);
 const $$=s=>Array.from(document.querySelectorAll(s));
@@ -442,15 +447,14 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 else bindTabs();
 // ---- END CLEAN NAVIGATION ----
 
-// ===== TAB CONTROLLER v2 (delegated; idempotent) =====
+// ===== TAB CONTROLLER v3 (delegated; buttons & links; hash-sync) =====
 (function(){
   const showTab = (t)=>{
     try{
       document.querySelectorAll("section[id^='tab-']").forEach(s=>s.classList.add("hidden"));
       const sec = document.getElementById("tab-"+t);
       if(sec) sec.classList.remove("hidden");
-      document.querySelectorAll(".nav button[data-tab]").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===t));
-      // fire render hooks
+      document.querySelectorAll(".nav [data-tab]").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===t));
       try{
         if(t==='dash' && typeof renderDashboard==='function') renderDashboard();
         if(t==='students'){ typeof renderStudents==='function' && renderStudents(); typeof renderSessions==='function' && renderSessions(); typeof fillStudentOptions==='function' && fillStudentOptions(); }
@@ -463,27 +467,31 @@ else bindTabs();
     }catch(e){}
   };
   const onClick = (e)=>{
-    const btn = e.target.closest('.nav button[data-tab]');
-    if(!btn) return;
+    const el = e.target.closest('.nav [data-tab]');
+    if(!el) return;
     e.preventDefault();
-    const t = btn.getAttribute('data-tab');
-    if(!t) return;
-    location.hash = t;
-    showTab(t);
+    const t = el.getAttribute('data-tab'); if(!t) return;
+    location.hash = t; showTab(t);
   };
-  // single attachment
   if(!window.__edubossTabsAttached){
     document.addEventListener('click', onClick);
-    window.addEventListener('hashchange', ()=>{
-      const key = (location.hash||'').replace('#','') || 'dash';
-      showTab(key);
-    });
+    window.addEventListener('hashchange', ()=>{ const key=(location.hash||'').replace('#','')||'dash'; showTab(key); });
     window.__edubossTabsAttached = true;
   }
-  // initial
+  document.addEventListener('DOMContentLoaded', ()=>{ const key=(location.hash||'').replace('#','')||'dash'; showTab(key); });
+  // Helpers for settings buttons
+  window.__edubossHardReload = async function(){
+    try{
+      const regs = await navigator.serviceWorker.getRegistrations(); for(const r of regs){ await r.unregister(); }
+      if(window.caches){ const keys = await caches.keys(); for(const k of keys){ await caches.delete(k); } }
+    }catch(e){}
+    location.reload(true);
+  };
+  window.__edubossResetTabs = function(){ location.hash='dash'; };
+  // Wire settings buttons if present
   document.addEventListener('DOMContentLoaded', ()=>{
-    const key = (location.hash||'').replace('#','') || 'dash';
-    showTab(key);
+    const b1=document.getElementById('btnHardReload'); if(b1) b1.onclick=()=>window.__edubossHardReload();
+    const b2=document.getElementById('btnResetTabs'); if(b2) b2.onclick=()=>window.__edubossResetTabs();
   });
 })();
-// ===== /TAB CONTROLLER v2 =====
+// ===== /TAB CONTROLLER v3 =====
