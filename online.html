@@ -1,32 +1,32 @@
-
-<!doctype html><html lang="tr"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Online Ders • EduBoss</title><meta name="theme-color" content="#1e2b48">
-<link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/icon-192.png"><link rel="stylesheet" href="/style.css">
-</head><body><div class="container">
-<header><div class="brand"><img src="/icons/icon-192.png" width="36" height="36"><div><div class="title">Online Ders</div><div class="tag" id="ownerTag"></div></div></div><div class="nav"><a class="btn" href="/index.html">Uygulamaya Dön</a></div></header>
-<section><div class="grid" id="publicPlans"></div>
-<div class="card" id="annWrap"><h3>Duyurular</h3><div id="annOut" class="small"></div></div>
-<div class="card" id="hwWrap"><h3>Ödevler</h3><div id="hwOut" class="small"></div></div><div class="card"><h3>İletişim</h3><div class="row"><a id="waLink" class="btn primary" target="_blank" rel="noopener">WhatsApp ile Yaz</a><a id="igLink" class="btn" target="_blank" rel="noopener">Instagram</a></div></div></section>
-<footer>© <span id="year"></span> <span id="ownerFoot"></span></footer>
-</div>
-<script>
-const $=s=>document.querySelector(s);
-const data=JSON.parse(localStorage.getItem('eduboss_data')||'{}');
-const plans=(data.online&&data.online.plans)||[]; const anns=((data.online||{}).announcements)||[]; const hws=((data.online||{}).homeworks)||[];
-const phone=(data.online&&data.online.contact&&data.online.contact.phone)||'';
-const ig=(data.online&&data.online.contact&&data.online.contact.instagram)||'';
-const owner=(data.settings&&data.settings.ownerName)||'Mehmet Ertürk';
-$("#ownerTag").textContent=owner+" • Matematik";
-$("#ownerFoot").textContent=owner;
-function card(p){return `<div class="card"><h3>${p.name||'Paket'}</h3><div class="small">${p.desc||''}</div><hr><div class="kv"><span class="k">Aylık:</span><span class="v">${p.price?('₺'+p.price):'—'}</span></div></div>`;}
-document.querySelector("#publicPlans").innerHTML=plans.length?plans.map(card).join(""):'<div class="card small">Henüz plan yok.</div>';
-function li(items){return items.length?('<ul>'+items.map(x=>`<li><b>${x.title||''}</b> ${x.date?('• '+x.date):''}<div class='small'>${x.text||''}</div></li>`).join('')+'</ul>'):'<div class="small">Kayıt yok.</div>'}
-document.querySelector('#annOut').innerHTML=li(anns);
-document.querySelector('#hwOut').innerHTML=li(hws);
-$("#year").textContent=new Date().getFullYear();
-const clean=(phone||'').replace(/\D/g,'');
-$("#waLink").href=clean?`https://wa.me/${clean}`:"#"; $("#waLink").textContent=clean?"WhatsApp ile Yaz":"WhatsApp (Telefon ekleyin)";
-$("#igLink").href=ig?`https://instagram.com/${ig}`:"#"; $("#igLink").textContent=ig?`@${ig}`:"Instagram (Kullanıcı ekleyin)";
-</script>
-</body></html>
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/icon-192.png"><link rel="stylesheet" href="/style.css"><title>EduBoss • Online</title></head><body><div class="container"><header>
+  <div class="brand"><img src="/icons/icon-192.png" width="36" height="36">
+    <div><div class="title">EduBoss</div><div class="tag" id="ownerTag">Öğretmen Asistanı • Mehmet Ertürk</div></div>
+  </div>
+  <div class="nav"><a class="btn" href="/index.html">Panel</a><a class="btn" href="/students.html">Öğrenciler</a><a class="btn" href="/tasks.html">Görevler</a><a class="btn" href="/docs.html">Evrak</a><a class="btn primary" href="/online.html">Online</a><a class="btn" href="/kasa.html">Kasa</a><a class="btn" href="/dukkan.html">Dükkan</a><a class="btn" href="/whatsapp.html">WhatsApp</a><a class="btn" href="/settings.html">Ayarlar</a></div>
+</header><section id="tab-online" class="hidden">
+  <h2>Online Ders</h2>
+  <div class="grid">
+    <div class="card"><h3>Planlar</h3><div id="planList"></div><hr><div class="row"><input id="planName" placeholder="Paket adı"><input id="planPrice" placeholder="Aylık fiyat (₺)"></div><label>Açıklama</label><textarea id="planDesc"></textarea><button class="btn primary" id="addPlan">+ Plan Ekle</button></div>
+    <div class="card"><h3>Paylaşım</h3><div class="row"><input id="contactPhone" placeholder="WhatsApp Tel: 9055…"><input id="contactIG" placeholder="Instagram kullanıcı adı"></div><button class="btn" id="previewOnline">Öğrenci Görünümü Aç</button></div>
+    <div class="grid">
+    <div class="card"><h3>Duyurular</h3>
+      <div id="annList" class="small"></div><hr>
+      <div class="row"><input id="annTitle" placeholder="Duyuru başlığı"><input id="annDate" type="date"></div>
+      <label>Metin</label><textarea id="annText"></textarea>
+      <button class="btn" id="addAnn">+ Duyuru Ekle</button>
+    </div>
+    <div class="card"><h3>Ödev Listesi</h3>
+      <div id="hwList" class="small"></div><hr>
+      <div class="row"><input id="hwTitle" placeholder="Ödev başlığı"><input id="hwDue" type="date"></div>
+      <label>Açıklama</label><textarea id="hwText"></textarea>
+      <button class="btn" id="addHW">+ Ödev Ekle</button>
+    </div>
+    <div class="card">
+    <h3>Sorun Gider</h3>
+    <div class="row">
+      <button class="btn" id="btnHardReload">Önbelleği Temizle & Zorla Güncelle</button>
+      <button class="btn" id="btnResetTabs">Sekmeleri Sıfırla</button>
+    </div>
+    <div class="small">Sekmeler açılmıyorsa bu düğmeye basın. Service Worker ve tarayıcı önbelleği temizlenir, sayfa yeniden yüklenir.</div>
+  </div>
+</section></div><script src="/app.js"></script></body></html>

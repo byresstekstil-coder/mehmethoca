@@ -1,0 +1,41 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/icon-192.png"><link rel="stylesheet" href="/style.css"><title>EduBoss • Kasa</title></head><body><div class="container"><header>
+  <div class="brand"><img src="/icons/icon-192.png" width="36" height="36">
+    <div><div class="title">EduBoss</div><div class="tag" id="ownerTag">Öğretmen Asistanı • Mehmet Ertürk</div></div>
+  </div>
+  <div class="nav"><a class="btn" href="/index.html">Panel</a><a class="btn" href="/students.html">Öğrenciler</a><a class="btn" href="/tasks.html">Görevler</a><a class="btn" href="/docs.html">Evrak</a><a class="btn" href="/online.html">Online</a><a class="btn primary" href="/kasa.html">Kasa</a><a class="btn" href="/dukkan.html">Dükkan</a><a class="btn" href="/whatsapp.html">WhatsApp</a><a class="btn" href="/settings.html">Ayarlar</a></div>
+</header><section id="tab-kasa" class="hidden">
+  <h2>Kasa (Gelir–Gider & Grafikler & Taksit)</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Kayıt Ekle</h3>
+      <div class="row"><div><label>Tür</label><select id="kkType"><option>Gelir</option><option>Gider</option></select></div><div><label>Kaynak/Kategori</label><select id="kkCat"><option>Özel Ders</option><option>Dershane</option><option>Okul</option><option>Dükkan Satış</option><option>Evrak/Harç</option><option>Diğer</option></select></div></div>
+      <div class="row"><div><label>Tarih & Saat</label><input type="datetime-local" id="kkDate"></div><div><label>Tutar (₺)</label><input type="number" id="kkAmount" step="0.01"></div></div>
+      <div class="row"><div><label>Yöntem</label><select id="kkMethod"><option>Nakit</option><option>Kredi Kartı</option><option>EFT/Havale</option></select></div><div><label>Karşı Taraf</label><input id="kkWho"></div></div>
+      <label>Açıklama</label><textarea id="kkNote"></textarea>
+      <div class="row"><button class="btn primary" id="addKK">+ Kayıt Ekle</button><button class="btn" id="kkCSV">CSV Çıkar</button></div>
+    </div>
+    <div class="card">
+      <h3>Aylık Grafik</h3>
+      <div class="canvas-wrap"><canvas id="kkChart" width="500" height="220"></canvas></div>
+      <div class="small">Son 6 ay gelir/gider bar grafiği.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="search"><input id="kkSearch" placeholder="Ara…"><select id="kkMonth"></select></div>
+    <table class="table" id="kkTable"><thead><tr><th>Tarih</th><th>Tür</th><th>Kat.</th><th>Tutar</th><th>Yöntem</th><th>Kim</th><th>Açıklama</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Taksit/Borç Planı</h3>
+      <div class="row"><input id="txName" placeholder="Plan adı (Örn: Kredi Kartı Eylül)"><input type="number" id="txTotal" placeholder="Toplam ₺" step="0.01"></div>
+      <div class="row"><input type="number" id="txCount" placeholder="Taksit sayısı"><input type="date" id="txStart"></div>
+      <div class="row"><select id="txType"><option>Borç (Gider)</option><option>Alacak (Gelir)</option></select><input id="txWho" placeholder="Karşı Taraf"></div>
+      <button class="btn primary" id="txCreate">+ Plan Oluştur</button>
+    </div>
+    <div class="card">
+      <h3>Planlar</h3>
+      <table class="table" id="txTable"><thead><tr><th>Plan</th><th>Tarih</th><th>Taksit</th><th>Tutar</th><th>Durum</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+</section></div><script src="/app.js"></script></body></html>

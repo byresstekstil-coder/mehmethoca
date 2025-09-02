@@ -1,0 +1,32 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/icon-192.png"><link rel="stylesheet" href="/style.css"><title>EduBoss • Dükkan</title></head><body><div class="container"><header>
+  <div class="brand"><img src="/icons/icon-192.png" width="36" height="36">
+    <div><div class="title">EduBoss</div><div class="tag" id="ownerTag">Öğretmen Asistanı • Mehmet Ertürk</div></div>
+  </div>
+  <div class="nav"><a class="btn" href="/index.html">Panel</a><a class="btn" href="/students.html">Öğrenciler</a><a class="btn" href="/tasks.html">Görevler</a><a class="btn" href="/docs.html">Evrak</a><a class="btn" href="/online.html">Online</a><a class="btn" href="/kasa.html">Kasa</a><a class="btn primary" href="/dukkan.html">Dükkan</a><a class="btn" href="/whatsapp.html">WhatsApp</a><a class="btn" href="/settings.html">Ayarlar</a></div>
+</header><section id="tab-dukkan" class="hidden">
+  <h2>Dükkan (Stok & Sipariş)</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Stok</h3>
+      <div class="row"><input id="stkName" placeholder="Ürün adı"><input id="stkSku" placeholder="SKU/Kod"></div>
+      <div class="row"><input id="stkCat" placeholder="Kategori"><input id="stkAttr" placeholder="Beden/Renk"></div>
+      <div class="row"><input type="number" id="stkQty" placeholder="Adet"><input type="number" id="stkMin" placeholder="Min Adet (uyarı)"><input type="number" id="stkCost" placeholder="Maliyet" step="0.01"><input type="number" id="stkPrice" placeholder="Satış" step="0.01"><input type="number" id="stkVAT" placeholder="KDV %" step="0.1"></div>
+      <button class="btn primary" id="addStk">+ Ürün Ekle</button>
+      <hr>
+      <div class="search"><input id="stkSearch" placeholder="Ara…"><button class="btn" id="stkCSV">CSV Çıkar</button></div>
+      <table class="table" id="stkTable"><thead><tr><th>Ad</th><th>SKU</th><th>Kat.</th><th>Öz.</th><th>Adet</th><th>Min</th><th>Maliyet</th><th>Satış</th><th>KDV</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="card">
+      <h3>Sipariş</h3>
+      <div class="row"><input id="ordCust" placeholder="Müşteri Adı"><input id="ordPhone" placeholder="Telefon (9055…)"></div>
+      <div class="row"><select id="ordSku"></select><input type="number" id="ordQty" value="1"><input type="number" id="ordPrice" placeholder="Birim (₺)" step="0.01"><button class="btn" id="addItem">Sepete Ekle</button></div>
+      <div class="card small"><b>Kalemler</b><div id="orderItems">Henüz eklenmedi.</div></div>
+      <div class="row"><input type="datetime-local" id="ordDate"><select id="ordMethod"><option>Nakit</option><option>Kart</option><option>EFT</option></select></div>
+      <label>Not</label><textarea id="ordNote"></textarea>
+      <div class="row"><button class="btn primary" id="addOrd">+ Sipariş Kaydet</button><button class="btn" id="ordCSV">CSV Çıkar</button></div>
+      <hr>
+      <div class="search"><input id="ordSearch" placeholder="Ara…"></div>
+      <table class="table" id="ordTable"><thead><tr><th>Tarih</th><th>Müşteri</th><th>Kalem</th><th>Toplam</th><th>Yöntem</th><th>Not</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+</section></div><script src="/app.js"></script></body></html>

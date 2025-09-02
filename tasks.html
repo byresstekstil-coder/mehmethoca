@@ -1,0 +1,17 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/icon-192.png"><link rel="stylesheet" href="/style.css"><title>EduBoss • Görevler</title></head><body><div class="container"><header>
+  <div class="brand"><img src="/icons/icon-192.png" width="36" height="36">
+    <div><div class="title">EduBoss</div><div class="tag" id="ownerTag">Öğretmen Asistanı • Mehmet Ertürk</div></div>
+  </div>
+  <div class="nav"><a class="btn" href="/index.html">Panel</a><a class="btn" href="/students.html">Öğrenciler</a><a class="btn primary" href="/tasks.html">Görevler</a><a class="btn" href="/docs.html">Evrak</a><a class="btn" href="/online.html">Online</a><a class="btn" href="/kasa.html">Kasa</a><a class="btn" href="/dukkan.html">Dükkan</a><a class="btn" href="/whatsapp.html">WhatsApp</a><a class="btn" href="/settings.html">Ayarlar</a></div>
+</header><section id="tab-tasks" class="hidden">
+  <h2>Görevler</h2>
+  <div class="card">
+    <div class="row"><div><label>Başlık</label><input id="taskTitle"></div><div><label>Kategori</label><select id="taskCat"><option>Okul</option><option>Dershane</option><option>Özel Ders</option><option>Dükkan</option><option>Evrak</option><option>Diğer</option></select></div></div>
+    <div class="row"><div><label>Bitiş</label><input type="datetime-local" id="taskDue"></div><div><label>Öncelik</label><select id="taskPrio"><option>Orta</option><option>Yüksek</option><option>Düşük</option></select></div></div>
+    <label>Not</label><textarea id="taskNote"></textarea><button class="btn primary" id="addTask">+ Görev Ekle</button>
+  </div>
+  <div class="card">
+    <div class="search"><input id="taskSearch" placeholder="Ara…"><select id="taskFilter"><option value="">Tümü</option><option>Okul</option><option>Dershane</option><option>Özel Ders</option><option>Dükkan</option><option>Evrak</option><option>Diğer</option></select><button class="btn" id="taskExport">Dışa Aktar (JSON)</button><button class="btn" id="taskCSV">CSV Çıkar</button><input type="file" id="taskImport" class="hidden" accept=".json"><button class="btn" id="taskImportBtn">İçe Aktar</button></div>
+    <table class="table" id="taskTable"><thead><tr><th>Başlık</th><th>Kat.</th><th>Bitiş</th><th>Öncelik</th><th>Durum</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+</section></div><script src="/app.js"></script></body></html>

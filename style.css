@@ -51,8 +51,3 @@ section h2{margin:8px 0 12px}
 
 .nav [data-tab].active{background:var(--primary);color:#fff}
 
-/* HASH TABS (no JS) */
-section[id^="tab-"]{display:none;}
-section:target{display:block;}
-/* default: when #dash present show dash; some browsers flash none before hash applied, so we keep minimal JS to set #dash */
-.nav .navbtn{display:inline-block;margin:0 4px 0 0}

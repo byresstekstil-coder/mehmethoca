@@ -1,0 +1,55 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/icon-192.png"><link rel="stylesheet" href="/style.css"><title>EduBoss • Ayarlar</title></head><body><div class="container"><header>
+  <div class="brand"><img src="/icons/icon-192.png" width="36" height="36">
+    <div><div class="title">EduBoss</div><div class="tag" id="ownerTag">Öğretmen Asistanı • Mehmet Ertürk</div></div>
+  </div>
+  <div class="nav"><a class="btn" href="/index.html">Panel</a><a class="btn" href="/students.html">Öğrenciler</a><a class="btn" href="/tasks.html">Görevler</a><a class="btn" href="/docs.html">Evrak</a><a class="btn" href="/online.html">Online</a><a class="btn" href="/kasa.html">Kasa</a><a class="btn" href="/dukkan.html">Dükkan</a><a class="btn" href="/whatsapp.html">WhatsApp</a><a class="btn primary" href="/settings.html">Ayarlar</a></div>
+</header><section id="tab-settings" class="hidden">
+  <h2>Ayarlar & Yedek</h2>
+  <div class="card">
+    <div class="row"><div><label>İsim</label><input id="ownerName" placeholder="Adınız"></div><div><label>Unvan</label><input id="ownerTitle" placeholder="Matematik Öğretmeni & Öğrenci Koçu"></div></div>
+    <label>Not</label><textarea id="ownerNote" placeholder="Kısa not…"></textarea>
+    <div class="row">
+      <div>
+        <label>KDV Oranı (%)</label>
+        <input id="ownerVAT" type="number" step="0.1" placeholder="Örn: 18">
+      </div>
+      <div>
+        <label>Fatura No Öneki</label>
+        <input id="ownerInvPrefix" placeholder="Örn: ME-">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Fatura Seri (Otomatik artar)</label>
+        <input id="ownerInvSerial" type="number" placeholder="1001">
+      </div>
+      <div>
+        <label>Logo (PNG/JPG)</label>
+        <input id="ownerLogo" type="file" accept=".png,.jpg,.jpeg">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Logo Boyutu (%)</label>
+        <input id="ownerLogoSize" type="number" min="10" max="200" step="5" placeholder="70">
+      </div>
+      <div>
+        <label>Logo Konumu</label>
+        <select id="ownerLogoPos"><option>Sol</option><option>Orta</option><option>Sağ</option></select>
+      </div>
+    </div>
+    <div class="alert">Logo yüklerseniz fatura/fiş üstünde görüntülenir. KDV ve fatura bilgileri istendiğinde düzenlenebilir.</div>
+    <div class="row">
+      <div>
+        <label>Fatura Tema Rengi (hex)</label>
+        <input id="invTheme" placeholder="#1e2b48">
+      </div>
+      <div>
+        <label>Fatura Yazı Tipi</label>
+        <select id="invFont"><option value="Arial,Helvetica,sans-serif">Arial</option><option value="system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">Sistem</option><option value="Georgia,serif">Georgia</option><option value="Tahoma,sans-serif">Tahoma</option></select>
+      </div>
+    </div>
+    
+    <div class="row"><button class="btn" id="backupExport">Tüm Verileri Dışa Aktar (JSON)</button><input type="file" id="backupImport" class="hidden" accept=".json"><button class="btn" id="backupImportBtn">Yedekten Yükle</button><button class="btn danger" id="wipeAll">Tüm Verileri Sıfırla</button></div>
+  </div>
+</section></div><script src="/app.js"></script></body></html>
