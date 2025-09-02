@@ -447,29 +447,3 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 else bindTabs();
 // ---- END CLEAN NAVIGATION ----
 
-// ===== TAB CONTROLLER v4 (delegated + hash + watchdog) =====
-(function(){
-  const renderHooks=(t)=>{
-    try{
-      if(t==='dash' && typeof renderDashboard==='function') renderDashboard();
-      if(t==='students'){ typeof renderStudents==='function' && renderStudents(); typeof renderSessions==='function' && renderSessions(); typeof fillStudentOptions==='function' && fillStudentOptions(); }
-      if(t==='tasks' && typeof renderTasks==='function') renderTasks();
-      if(t==='docs' && typeof renderDocs==='function') renderDocs();
-      if(t==='online'){ typeof renderPlans==='function' && renderPlans(); typeof renderOnlineLists==='function' && renderOnlineLists(); }
-      if(t==='kasa'){ typeof renderKasaMonths==='function' && renderKasaMonths(); typeof renderKasa==='function' && renderKasa(); typeof drawKasaChart==='function' && drawKasaChart(); typeof renderTaksit==='function' && renderTaksit(); }
-      if(t==='dukkan'){ typeof renderStok==='function' && renderStok(); typeof renderOrders==='function' && renderOrders(); typeof fillOrderSku==='function' && fillOrderSku(); }
-    }catch(e){}
-  };
-  const showTab=(t)=>{
-    document.querySelectorAll("section[id^='tab-']").forEach(s=>s.classList.add("hidden"));
-    const sec=document.getElementById("tab-"+t); if(sec) sec.classList.remove("hidden");
-    document.querySelectorAll(".nav [data-tab]").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===t));
-    renderHooks(t);
-  };
-  const onClick=(e)=>{ const el=e.target.closest('.nav [data-tab]'); if(!el) return; e.preventDefault(); const t=el.getAttribute('data-tab'); if(!t) return; if(location.hash.replace('#','')!==t){ location.hash=t; } else { showTab(t); } };
-  function boot(){ const key=(location.hash||'').replace('#','')||'dash'; showTab(key); }
-  if(!window.__eb_tab_v4){ document.addEventListener('click', onClick); window.addEventListener('hashchange', boot); window.__eb_tab_v4=true; }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  setTimeout(()=>{ const vis=[...document.querySelectorAll("section[id^='tab-']")].some(s=>!s.classList.contains('hidden')); if(!vis) boot(); },1000);
-})(); 
-// ===== /TAB CONTROLLER v4 =====

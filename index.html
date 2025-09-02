@@ -9,15 +9,15 @@
     <div><div class="title">EduBoss</div><div class="tag" id="ownerTag">Öğretmen Asistanı • Mehmet Ertürk</div></div>
   </div>
   <div class="nav">
-    <button data-tab="dash"   class="active">Panel</button>
-    <button data-tab="students"  >Öğrenciler</button>
-    <button data-tab="tasks"  >Görevler</button>
-    <button data-tab="docs"  >Evrak</button>
-    <button data-tab="online"  >Online</button>
-    <button data-tab="kasa"  >Kasa</button>
-    <button data-tab="dukkan"  >Dükkan</button>
-    <button data-tab="whatsapp"  >WhatsApp</button>
-    <button data-tab="settings"  >Ayarlar</button>
+    <a class="btn navbtn" data-tab="dash" href="#dash">Panel</a>
+    <a class="btn navbtn" data-tab="students" href="#students">Öğrenciler</a>
+    <a class="btn navbtn" data-tab="tasks" href="#tasks">Görevler</a>
+    <a class="btn navbtn" data-tab="docs" href="#docs">Evrak</a>
+    <a class="btn navbtn" data-tab="online" href="#online">Online</a>
+    <a class="btn navbtn" data-tab="kasa" href="#kasa">Kasa</a>
+    <a class="btn navbtn" data-tab="dukkan" href="#dukkan">Dükkan</a>
+    <a class="btn navbtn" data-tab="whatsapp" href="#whatsapp">WhatsApp</a>
+    <a class="btn navbtn" data-tab="settings" href="#settings">Ayarlar</a>
   </div>
 </header>
 
@@ -238,4 +238,7 @@
 <footer>© <span id="year"></span> <span id="ownerFoot">EduBoss</span></footer>
 </div>
 <script src="/app.js"></script>
+<script id="hashBootScript">
+(function(){ if(!location.hash){ location.replace(location.pathname + location.search + '#dash'); } })();
+</script>
 </body></html>
